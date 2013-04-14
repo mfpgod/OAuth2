@@ -10,63 +10,43 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class GoogleClient : OAuth2Client
     {
-        public GoogleClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(factory, configuration)
-        {
-        }
+        public static string ClientName = "Google";
 
-        public override string ProviderName
-        {
-            get { return "Google"; }
-        }
-
-        protected override Endpoint AccessCodeServiceEndpoint
-        {
-            get
-            {
-                return new Endpoint
+        public static readonly Endpoint CodeEndpoint = new Endpoint
                 {
                     BaseUri = "https://accounts.google.com",
                     Resource = "/o/oauth2/auth"
                 };
-            }
-        }
 
-        protected override Endpoint AccessTokenServiceEndpoint
-        {
-            get
-            {
-                return new Endpoint
+        public static readonly Endpoint TokenEndpoint = new Endpoint
                 {
                     BaseUri = "https://accounts.google.com",
                     Resource = "/o/oauth2/token"
                 };
-            }
-        }
 
-        protected override Endpoint UserInfoServiceEndpoint
-        {
-            get
-            {
-                return new Endpoint
+        public static readonly Endpoint UserInfoEndpoint = new Endpoint
                 {
                     BaseUri = "https://www.googleapis.com",
                     Resource = "/oauth2/v1/userinfo"
                 };
-            }
-        }
 
-        protected override UserInfo ParseUserInfo(string content)
+        public static UserInfo UserInfoParserFunc(string content)
         {
             var response = JObject.Parse(content);
             return new UserInfo
             {
+                ProviderName = ClientName,
                 Id = response["id"].Value<string>(),
                 Email = response["email"].Value<string>(),
                 FirstName = response["given_name"].Value<string>(),
                 LastName = response["family_name"].Value<string>(),
                 PhotoUri = response["picture"].SafeGet(x => x.Value<string>())
             };
+        }
+
+        public GoogleClient(IRequestFactory factory, IClientConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
+        {
         }
     }
 }

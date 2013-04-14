@@ -23,76 +23,33 @@ namespace OAuth2.Client.Impl
                 request.AddParameter("access_token", (object)this.AccessToken, ParameterType.GetOrPost);
             }
         }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WindowsLiveClient"/> class.
-        /// </summary>
-        /// <param name="factory">The factory.</parequestFam>
-        /// <param name="configuration">The configuration.</param>
-        public WindowsLiveClient(IRequestFactory factory, IClientConfiguration configuration) 
-            : base(factory, configuration)
-        {
-        }
+        ///
 
-        /// <summary>
-        /// Defines URI of service which issues access code.
-        /// </summary>
-        protected override Endpoint AccessCodeServiceEndpoint
-        {
-            get
+        public static string ClientName = "WindowsLive";
+
+        public static readonly Endpoint CodeEndpoint = new Endpoint
             {
-                return new Endpoint
-                {
-                    BaseUri = "https://login.live.com",
-                    Resource = "/oauth20_authorize.srf"
-                };
-            }
-        }
+                BaseUri = "https://login.live.com",
+                Resource = "/oauth20_authorize.srf"
+            };
 
-        /// <summary>
-        /// Defines URI of service which issues access token.
-        /// </summary>
-        protected override Endpoint AccessTokenServiceEndpoint
-        {
-            get
+        public static readonly Endpoint TokenEndpoint = new Endpoint
             {
-                return new Endpoint
-                {
-                    BaseUri = "https://login.live.com",
-                    Resource = "/oauth20_token.srf"
-                };
-            }
-        }
+                BaseUri = "https://login.live.com",
+                Resource = "/oauth20_token.srf"
+            };
 
-        /// <summary>
-        /// Defines URI of service which allows to obtain information about user which is currently logged in.
-        /// </summary>
-        protected override Endpoint UserInfoServiceEndpoint
-        {
-            get
+        public static readonly Endpoint UserInfoEndpoint = new Endpoint
             {
-                return new Endpoint
-                {
-                    BaseUri = "https://apis.live.net/v5.0",
-                    Resource = "/me"
-                };
-            }
-        }
+                BaseUri = "https://apis.live.net/v5.0",
+                Resource = "/me"
+            };
 
-        protected override IAuthenticator GetAuthenticator(Reques(Oauth2AccessToken accessToken)
-        {
-            return new WindowsLiveOAuth2UriQueryParameterAuthenticator(accessToken.Token);
-        }
-        
-        /// <summary>
-        /// Should return parsed <see cref="UserInfo"/> from content received from third-party service.
-        /// </summary>
-        /// <param name="content">The content which is received from third-party service.</param>
-        protected override UserInfo ParseUserInfo(string content)
-        {
-            var response = JObject.Parse(content);
+        public static UserInfo UserInfoParserFunc(string content)
+        {esponse = JObject.Parse(content);
             return new UserInfo
             {
-                Id = response["id"].Value<string>(),
+                Id = response["id"ProviderName = ClientName,d = response["id"].Value<string>(),
                 FirstName = response["first_name"].Value<string>(),
                 LastName = response["last_name"].Value<string>(),
                 Email = response["emails"]["preferred"].Value<string>(),
@@ -100,9 +57,15 @@ namespace OAuth2.Client.Impl
             };
         }
 
-        public override string ProviderName
-        {
-            get { return "WindowsLive"; }
+      
         }
-    }
+
+        public WindowsLiveClient(IRequestFactory factory, IClientConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
+        {        protected override IAuthenticator GetAuthenticator(Reques(Oauth2AccessToken accessToken)
+        {
+            return new WindowsLiveOAuth2UriQueryParameterAuthenticator(accessToken.Token);
+        }
+        
+        /// <}
 }
