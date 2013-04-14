@@ -19,47 +19,50 @@ namespace OAuth2.Client
         private const string OAuthTokenSecretKey = "oauth_token_secret";
         private const string OAuthVerifierKey = "oauth_verifier";
 
-        private readonly IRequestFactory _factory;
-        private readonly IClientConfiguration _configuration;
-
+   
+        
         private string _secret;
 
-        /// <summary>
+        protected readonly IRequestFactory RequestFactory;
+
+        protected readonly IClientConfiguration ClientConfiguration      /// <summary>
         /// Defines URI of service which is called for obtaining request token.
         /// </summary>
-        protected abstract Endpoint RequestTokenServiceEndpoint { get; }
-
-        /// <summary>
-        /// Defines URI of service which should be called to initiate authentication process.
+    
+        protected Endpoint AccessRequestTokenEndpoint { get; set; }     /// <summary>
+        /// Defines URI of service which is cashould be called to initiate authentication process.
         /// </summary>
-        protected abstract Endpoint LoginServiceEndpoint { get; }
-
-        /// <summary>
-        /// Defines URI of service which issues access token.
+        protected Endpoint AccessLoginEndpoint { get; set; }     /// <summary>
+        /// Defines URI of service which is callsues access token.
         /// </summary>
-        protected abstract Endpoint AccessTokenServiceEndpoint { get; }
-
-        /// <summary>
-        /// Defines URI of service which is called to obtain user information.
+        protected Endpoint AccessTokenEndpoint { get; set; }     /// <summary>
+        /// Defines URI of service which is called for oto obtain user information.
         /// </summary>
-        protected abstract Endpoint UserInfoServiceEndpoint { get; }
+        protected Endpoint AccessUserInfoEndpoint { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OAuthClient" /> class.
-        /// </summary>
-        /// <param name="factory">The factorequestFy.</param>
-        /// <param name="configuration">The configuration.</param>
-        protected OAuthClient(IRequestFactory factory, IClientConfiguration configuration)
+        protected Func<string, UserInfo> UserInfoParser { get; set; }
+
+        protected OAuthClient(string name, Endpoint requestTokenEndpoint, Endpoint loginEndpoint,
+                               Endpoint accessTokenEndpoint, Endpoint userInfoEndpoint, IRequestFactory requestFactory,
+                               IClientConfiguration clientConfiguration,
+                               Func<string, UserInfo> userInfoParser)
         {
-            _factory = factory;
-            _configuration = configuration;
+            Name = name;
+            AccessRequestTokenEndpoint = requestTokenEndpoint;
+            AccessLoginEndpoint = loginEndpoint;
+            AccessTokenEndpoint = accessTokenEndpoint;
+            AccessUserInfoEndpoint = userInfoEndpoint;
+
+            RequestFactory = requestFactory;
+            ClientConfiguration = clientConfiguration;
+
+            UserInfoParser = userInfoParser;
         }
+
 
         #region IClient impl
 
-        public abstract string ProviderNt; }
-
-        public string GetLoginLinkUri(string state = null)
+        public string Name { get; protected s      public string GetLoginLinkUri(string state = null)
         {
             return GetLoginRequestUri(GetRequestToken(), state);
         }
@@ -83,12 +86,12 @@ namespace OAuth2.Client
             Require.Argument("accessToken", oauth1AccessToken);
 
             var client = _factory.NewClient();
-            client.BaseUrl = UserInfoServiceEndpoint.BaseUri;
-            client.Authenticator = OAuth1Authenticator.ForProtectedResource(
-                _configuration.ClientId, _configuration.ClientSecret, oauth1AccessToken.Token, oauth1AccessToken.TokenSecret);
+            RequestFactory.NewClient();
+            client.BaseUrl = AccessUserInfoticator.ForRequestToken(
+                _configuration.ClientId, _configuratProtectedResource(
+                ClientConfiguration.ClientId, ClientConfiguration.ClientSecret, oauth1AccessToken.Token, oauth1AccessToken.TokenSecret);
 
-            var request = _factory.NewRequest();
-            request.Resource = resource;
+            var request = RequestFt.Resource = resource;
 
             return client.Execute(request);
         }
@@ -97,11 +100,10 @@ namespace OAuth2.Client
         {
             var restResponse = GetData(accessToken, UserInfoServiceEndpoint.Resource);
 
-            var userInfo = ParseUserInfo(restResponse.Content);
-            userInfo.ProviderName = ProviderName;
+           AccessUserInfoEndpoint.Resource);
 
-            return userInfo;
-           #endregion
+            var userInfo = UserInfoParser(restResponse.Content);
+            ndregion
 
         #region Private methods
 
@@ -111,15 +113,12 @@ namespace OAuth2.Client
         private NameValueCollection GetRequestToken()
         {
             var client = _factory.NewClient();
-            client.BaseUrl = RequestTokenServiceEndpoint.BaseUri;
-            client.Authenticator = OAuth1Authenticator.ForRequestToken(
-                _configuration.ClientId, _configuration.ClientSecret, _configuration.RedirectUri);
+            client.BaseUrl = RequestTokenSRequestFactory.NewClient();
+            client.BaseUrl = AccessRequestTokenticator.ForRequestToken(
+                _configuration.ClientId, _configuration.ClientSecret, _configuratioClientConfiguration.ClientId, ClientConfiguration.ClientSecret, ClientConfiguration.RedirectUri);
 
-            var request = _factory.NewRequest();
-            request.Resource = RequestTokenServiceEndpoint.Resource;
-            request.Method = Method.POST;
-
-            var response = client.Execute(request);
+            var request = RequestFactory.NewRequest();
+            request.Resource = AccessRequestToken    var response = client.Execute(request);
             return HttpUtility.ParseQueryString(response.Content);
         }
 
@@ -142,10 +141,11 @@ namespace OAuth2.Client
             var client = _factory.NewClient();
             client.BaseUrl = LoginServiceEndpoint.BaseUri;
 
-            var request = _factory.NewRequest();
-            request.Resource = LoginServiceEndpoint.Resource;
-            request.AddParameter(OAuthTokenKey, response[OAuthTokenKey]);
-            if (!state.IsEmpty())
+           RequestFactory.NewClient();
+            client.BaseUrl = AccessLoginEndpoint.BaseUri;
+
+            var request = RequestFactory.NewRequest();
+            request.Resource = AccessLogin        if (!state.IsEmpty())
             {
                 request.AddParameter("state", state);
             }
@@ -164,22 +164,19 @@ namespace OAuth2.Client
         {
             var client = _factory.NewClient();
             client.BaseUrl = AccessTokenServiceEndpoint.BaseUri;
-            client.Authenticator = OAuth1Authenticator.ForAccessToken(
-                _configuration.ClientId, _configuration.ClientSecret, token, _secret, verifier);
+            client.AuthenticaRequestFactory.NewClient();
+            client.BaseUrl = AccessTokenticator.ForRequestToken(
+                _configuration.ClientId, _configuratAccessToken(
+                ClientConfiguration.ClientId, ClientConfiguration.ClientSecret, token, _secret, verifier);
 
-            var request = _factory.NewRequest();
-            request.Resource = AccessTokenServiceEndpoint.Resource;
-            request.Method = Method.POST;
-
-            var response = client.Execute(request);
+            var request = RequestFactory.NewRequest();
+            request.Resource = AccessToken    var response = client.Execute(request);
             return HttpUtility.ParseQueryString(response.Content);
         }
 
         /// <summary>
-        /// Should return parsed <see cref="UserInfo"/> using content of callback issued by service.
+        /// Composes login link URI.
         /// </summary>
-        protected abstract UserInfo ParseUserInfo(string content);
-
-        #endregion
+   #endregion
     }
 }

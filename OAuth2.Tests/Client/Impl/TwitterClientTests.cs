@@ -103,8 +103,8 @@ namespace OAuth2.Tests.Client.Impl
 
         class TwitterClientDescendant : TwitterClient
         {
-            public TwitterClientDescendant(IRequestFactory factory, IClientConfiguration configuration) 
-                : base(factory, configuration)
+            public TwitterClientDescendant(IRequestFactory requestFactory, IClientConfiguration clientConfiguration) 
+                : base(requestFactory, clientConfiguration)
             {
             }
 

@@ -125,8 +125,8 @@ namespace OAuth2.Tests.Client
 
         class OAuthClientDescendant : OAuthClient
         {
-            public OAuthClientDescendant(IRequestFactory factory, IClientConfiguration configuration)
-                : base(factory, configuration)
+            public OAuthClientDescendant(IRequestFactory requestFactory, IClientConfiguration clientConfiguration)
+                : base(requestFactory, clientConfiguration)
             {
             }
             

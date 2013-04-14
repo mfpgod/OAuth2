@@ -88,8 +88,8 @@ namespace OAuth2.Tests.Client.Impl
 
         class LinkedInClientDescendant : LinkedInClient
         {
-            public LinkedInClientDescendant(IRequestFactory factory, IClientConfiguration configuration)
-                : base(factory, configuration)
+            public LinkedInClientDescendant(IRequestFactory requestFactory, IClientConfiguration clientConfiguration)
+                : base(requestFactory, clientConfiguration)
             {
             }
 

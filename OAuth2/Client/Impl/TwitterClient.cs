@@ -10,83 +10,33 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class TwitterClient : OAuthClient
     {
-        public TwitterClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(factory, configuration)
-        {
-        }
+        public static string ClientName = "Twitter";
 
-        /// <summary>
-        /// Defines URI of service which is called for obtaining request token.
-        /// </summary>
-        protected override Endpoint RequestTokenServiceEndpoint
-        {
-            get
+        public static readonly Endpoint RequestTokenEndpoint = new Endpoint
             {
-                return new Endpoint
-                {
-                    BaseUri = "https://api.twitter.com",
-                    Resource = "/oauth/request_token"
-                };
-            }
-        }
+                BaseUri = "https://api.twitter.com",
+                Resource = "/oauth/request_token"
+            };
 
-        /// <summary>
-        /// Defines URI of service which should be called to initiate authentication process.
-        /// </summary>
-        protected override Endpoint LoginServiceEndpoint
-        {
-            get
+        public static readonly Endpoint LoginEndpoint = new Endpoint
             {
-                return new Endpoint
-                {
-                    BaseUri = "https://api.twitter.com",
-                    Resource = "/oauth/authenticate"
-                };
-            }
-        }
+                BaseUri = "https://api.twitter.com",
+                Resource = "/oauth/authenticate"
+            };
 
-        /// <summary>
-        /// Defines URI of service which issues access token.
-        /// </summary>
-        protected override Endpoint AccessTokenServiceEndpoint
-        {
-            get
+        public static readonly Endpoint TokenEndpoint = new Endpoint
             {
-                return new Endpoint
-                {
-                    BaseUri = "https://api.twitter.com",
-                    Resource = "/oauth/access_token"
-                };
-            }
-        }
+                BaseUri = "https://api.twitter.com",
+                Resource = "/oauth/access_token"
+            };
 
-        /// <summary>
-        /// Defines URI of service which is called to obtain user information.
-        /// </summary>
-        protected override Endpoint UserInfoServiceEndpoint
-        {
-            get
+        public static readonly Endpoint UserInfoEndpoint = new Endpoint
             {
-                return new Endpoint
-                {
-                    BaseUri = "https://api.twitter.com",
-                    Resource = "/1.1/account/verify_credentials.json"
-                };
-            }
-        }
+                BaseUri = "https://api.twitter.com",
+                Resource = "/1.1/account/verify_credentials.json"
+            };
 
-        /// <summary>
-        /// Friendly name of provider (OAuth service).
-        /// </summary>
-        public override string Name
-        {
-            get { return "Twitter"; }
-        }
-
-        /// <summary>
-        /// Should return parsed <see cref="UserInfo" /> using content of callback issued by service.
-        /// </summary>
-        protected override UserInfo ParseUserInfo(string content)
+        public static UserInfo UserInfoParserFunc(string content)
         {
             var response = JObject.Parse(content);
 
@@ -114,6 +64,12 @@ namespace OAuth2.Client.Impl
                 FirstName = firstName,
                 LastName = lastName
             };
+        }
+
+        public TwitterClient(IRequestFactory factory, IClientConfiguration configuration)
+            : base(ClientName, RequestTokenEndpoint, LoginEndpoint, TokenEndpoint,
+                   UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
+        {
         }
     }
 }

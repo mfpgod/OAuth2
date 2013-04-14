@@ -9,91 +9,41 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class LinkedInClient : OAuthClient
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LinkedInClient"/> class.
-        /// </summary>
-        /// <param name="factory">The requestFactory.</param>
-        /// <param name="configuration">The configuration.</param>
-        public LinkedInClient(IRequestFactory factory, IClientConfiguration configuration) 
-            : base(factory, configuration)
-        {
-        }
+        public static string ClientName = "LinkedIn";
 
-        /// <summary>
-        /// Gets the request token service endpoint.
-        /// </summary>
-        protected override Endpoint RequestTokenServiceEndpoint
+        public static readonly Endpoint RequestTokenEndpoint = new Endpoint
         {
-            get
-            {
-                return new Endpoint
-                {
-                    BaseUri = "https://api.linkedin.com",
-                    Resource = "/uas/oauth/requestToken"
-                };
-            }
-        }
+            BaseUri = "https://api.linkedin.com",
+            Resource = "/uas/oauth/requestToken"
+        };
 
-        /// <summary>
-        /// Gets the login service endpoint.
-        /// </summary>
-        protected override Endpoint LoginServiceEndpoint
+        public static readonly Endpoint LoginEndpoint = new Endpoint
         {
-            get
-            {
-                return new Endpoint
-                {
-                    BaseUri = "https://www.linkedin.com",
-                    Resource = "/uas/oauth/authorize"
-                };
-            }
-        }
-
-        /// <summary>
-        /// Gets the access token service endpoint.
-        /// </summary>
-        protected override Endpoint AccessTokenServiceEndpoint
+            BaseUri = "https://www.linkedin.com",
+            Resource = "/uas/oauth/authorize"
+        };
+        
+        public static readonly Endpoint TokenEndpoint = new Endpoint
         {
-            get
-            {
-                return new Endpoint
-                {
-                    BaseUri = "https://api.linkedin.com",
-                    Resource = "/uas/oauth/accessToken"
-                };
-            }
-        }
+            BaseUri = "https://api.linkedin.com",
+            Resource = "/uas/oauth/accessToken"
+        };
 
-        /// <summary>
-        /// Gets the user info service endpoint.
-        /// </summary>
-        protected override Endpoint UserInfoServiceEndpoint
+        public static readonly Endpoint UserInfoEndpoint = new Endpoint
         {
-            get
-            {
-                return new Endpoint
-                {
-                    BaseUri = "http://api.linkedin.com",
-                    Resource = "/v1/people/~:(id,first-name,last-name,picture-url)"
-                };
-            }
-        }
+            BaseUri = "http://api.linkedin.com",
+            Resource = "/v1/people/~:(id,first-name,last-name,picture-url)"
+        };
 
-        /// <summary>
-        /// Parses the user info.
-        /// </summary>
-        /// <param name="content">The content.</param>
-        protected override UserInfo ParseUserInfo(string content)
+        public static UserInfo UserInfoParserFunc(string content)
         {
             throw new System.NotImplementedException();
         }
 
-        /// <summary>
-        /// Friendly name of provider (OAuth service).
-        /// </summary>
-        public override string Name
+        public LinkedInClient(IRequestFactory factory, IClientConfiguration configuration)
+            : base(ClientName, RequestTokenEndpoint, LoginEndpoint, TokenEndpoint,
+                   UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
-            get { return "LinkedIn"; }
         }
     }
 }
