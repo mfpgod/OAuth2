@@ -12,8 +12,6 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class InstagramClient : OAuth2Client
     {
-        private string _responseContent;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="InstagramClient"/> class.
         /// </summary>
@@ -69,22 +67,13 @@ namespace OAuth2.Client.Impl
             }
         }
         
-        protected override void AfterGetAccessToken(IRestResponse response)
-        {
-            base.AfterGetAccessToken(response);
-            // Instagram returns userinfo on access_token request
-            // Source document 
-            // http://instagram.com/developer/authentication/
-            _responseContent = response.Content;
-        }
-        
         /// <summary>
         /// Should return parsed <see cref="UserInfo"/> from content received from third-party service.
         /// </summary>
         /// <param name="content">The content which is received from third-party service.</param>
         protected override UserInfo ParseUserInfo(string content)
         {
-            var response = JObject.Parse(_responseContent);
+            var response = JObject.Parse(content);
             var names = response["user"]["full_name"].Value<string>().Split(' ');
             return new UserInfo
             {

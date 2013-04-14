@@ -55,7 +55,9 @@ namespace OAuth2.Example.Controllers
         /// </summary>
         public ActionResult Auth()
         {
-            return View(GetClient().GetUserInfo(Request.QueryString));
+            var clinet = GetClient();
+            var accessToken = clinet.Finalize(Request.QueryString);
+            return View(clinet.GetUserInfo(accessToken));
         }
 
         private IClient GetClient()

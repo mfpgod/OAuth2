@@ -11,6 +11,18 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class WindowsLiveClient : OAuth2Client
     {
+        internal class WindowsLiveOAuth2UriQueryParameterAuthenticator : OAuth2Authenticator
+        {
+            public WindowsLiveOAuth2UriQueryParameterAuthenticator(string accessToken)
+                : base(accessToken)
+            {
+            }
+
+            public override void Authenticate(IRestClient client, IRestRequest request)
+            {
+                request.AddParameter("access_token", (object)this.AccessToken, ParameterType.GetOrPost);
+            }
+        }
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowsLiveClient"/> class.
         /// </summary>
@@ -66,15 +78,11 @@ namespace OAuth2.Client.Impl
             }
         }
 
-        /// <summary>
-        /// Called just before issuing request to third-party service when everything is ready.
-        /// Allows to add extra parameters to request or do any other needed preparations.
-        /// </summary>
-        protected override void BeforeGetUserInfo(IRestRequest request)
+        protected override IAuthenticator GetAuthenticator(Oauth2AccessToken accessToken)
         {
-           request.AddParameter("access_token", AccessToken);
+            return new WindowsLiveOAuth2UriQueryParameterAuthenticator(accessToken.Token);
         }
-
+        
         /// <summary>
         /// Should return parsed <see cref="UserInfo"/> from content received from third-party service.
         /// </summary>

@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Specialized;
 using OAuth2.Models;
+using RestSharp;
 
 namespace OAuth2.Client
 {
@@ -17,8 +19,6 @@ namespace OAuth2.Client
     /// </remarks>
     public interface IClient
     {
-        object AccessToken { get; }
-
         /// <summary>
         /// Friendly name of provider (third-party authentication service). 
         /// Defined by client implementation developer and supposed to be unique.
@@ -39,7 +39,7 @@ namespace OAuth2.Client
         /// Callback request payload (parameters).
         /// <example>Request.QueryString</example>
         /// </param>
-        void Finalize(NameValueCollection parameters);
+        OauthAccessToken Finalize(NameValueCollection parameters);
 
         /// <summary>
         /// Obtains user information using third-party authentication service 
@@ -49,6 +49,16 @@ namespace OAuth2.Client
         /// Callback request payload (parameters).
         /// <example>Request.QueryString</example>
         /// </param>
-        UserInfo GetUserInfo(NameValueCollection parameters);        
+        IRestResponse GetData(OauthAccessToken accessToken, string resource);
+
+        /// <summary>
+        /// Obtains user information using third-party authentication service 
+        /// using data provided via callback request.
+        /// </summary>
+        /// <param name="parameters">
+        /// Callback request payload (parameters).
+        /// <example>Request.QueryString</example>
+        /// </param>
+        UserInfo GetUserInfo(OauthAccessToken accessToken);
     }
 }

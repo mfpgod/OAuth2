@@ -20,13 +20,13 @@ namespace OAuth2.Client.Impl
         protected override dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
         {
             return new
-            {
-                code = parameters["code"],
-                client_id = configuration.ClientId,
-                client_secret = configuration.ClientSecret,
-                redirect_uri = configuration.RedirectUri,        
-                state = this.State,
-            };
+                {
+                    code = parameters["code"],
+                    client_id = configuration.ClientId,
+                    client_secret = configuration.ClientSecret,
+                    redirect_uri = configuration.RedirectUri,
+                    state = parameters["state"]
+                };
         }
 
         /// <summary>

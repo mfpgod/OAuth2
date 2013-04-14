@@ -61,20 +61,11 @@ namespace OAuth2.Client.Impl
                 return new Endpoint
                 {
                     BaseUri = "https://graph.facebook.com",
-                    Resource = "/me"
+                    Resource = "/me?fields=id,first_name,last_name,email,picture"
                 };
             }
         }
-
-        /// <summary>
-        /// Called just before issuing request to third-party service when everything is ready.
-        /// Allows to add extra parameters to request or do any other needed preparations.
-        /// </summary>
-        protected override void BeforeGetUserInfo(IRestRequest request)
-        {
-            request.AddParameter("fields", "id,first_name,last_name,email,picture");
-        }
-
+        
         /// <summary>
         /// Should return parsed <see cref="UserInfo"/> from content received from third-party service.
         /// </summary>

@@ -70,11 +70,11 @@ namespace OAuth2.Client.Impl
         /// Called just before issuing request to third-party service when everything is ready.
         /// Allows to add extra parameters to request or do any other needed preparations.
         /// </summary>
-        protected override void BeforeGetUserInfo(IRestRequest request)
-        {
-            // Source document 
-            // https://developer.foursquare.com/overview/auth.html
-        }
+//        protected override void BeforeGetUserInfo(IRestRequest request)
+//        {
+//            // Source document 
+//            // https://developer.foursquare.com/overview/auth.html
+//        }
 
         /// <summary>
         /// Should return parsed <see cref="UserInfo"/> from content received from third-party service.

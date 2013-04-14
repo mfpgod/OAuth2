@@ -7,6 +7,7 @@ using OAuth2.Infrastructure;
 using OAuth2.Models;
 using RestSharp;
 using RestSharp.Contrib;
+using RestSharp.Validation;
 
 namespace OAuth2.Client
 {
@@ -19,26 +20,6 @@ namespace OAuth2.Client
 
         private readonly IRequestFactory _factory;
         private readonly IClientConfiguration _configuration;
-
-        /// <summary>
-        /// Friendly name of provider (OAuth2 service).
-        /// </summary>
-        public abstract string ProviderName { get; }
-        
-        /// <summary>
-        /// Access token returned by provider. Can be used for further calls of provider API.
-        /// </summary>
-        public object AccessToken { get; private set; }
-
-        /// <summary>
-        /// State (any additional information that was provided by application and is posted back by service).
-        /// </summary>
-        public string State { get; private set; }
-
-        /// <summary>
-        /// Error (if any).
-        /// </summary>
-        public string Error { get; private set; }
 
         /// <summary>
         /// Defines URI of service which issues access code.
@@ -67,77 +48,28 @@ namespace OAuth2.Client
             _configuration = configuration;
         }
 
-        /// <summary>
-        /// Returns URI of service which should be called in order to start authentication process.
-        /// This URI should be used for rendering login link.
-        /// </summary>
-        /// <remarks>
-        /// Any additional information that will be posted back by service.
-        /// </remarks>
+        #region ICLient impl
+
+        public abstract string ProviderName { get; }
+
         public string GetLoginLinkUri(string state = null)
-        {            
+        {
             var client = _factory.NewClient();
             client.BaseUrl = AccessCodeServiceEndpoint.BaseUri;
 
             var request = _factory.NewRequest();
             request.Resource = AccessCodeServiceEndpoint.Resource;
 
-            request.AddObject(new
-            {
-                response_type = "code",
-                client_id = _configuration.ClientId,
-                redirect_uri = _configuration.RedirectUri,
-                scope = _configuration.Scope,
-                state
-            });
+            request.AddObject(this.BuildRequestTokenExchangeObject(_configuration, state));
 
             return client.BuildUri(request).ToString();
         }
 
-        public virtual void Finalize(NameValueCollection parameters)
+        public virtual OauthAccessToken Finalize(NameValueCollection parameters)
         {
-            this.AccessToken = null;
-            
             if (!parameters["error"].IsEmpty())
-                this.Error = parameters["error"];
-            if(!parameters["state"].IsEmpty())
-                this.State = parameters["state"];
-            
-            if (!this.Error.IsEmpty())            
-                throw new ApplicationException(this.Error);
+                throw new Exception(parameters["error"]);
 
-            this.AccessToken = this.GetAccessToken(parameters);
-        }
-
-        /// <summary>
-        /// Obtains user information using OAuth2 service and
-        /// data provided via callback request.
-        /// </summary>
-        /// <param name="parameters">Callback request payload (parameters).</param>
-        public UserInfo GetUserInfo(NameValueCollection parameters)
-        {
-            this.Finalize(parameters);
-            return this.GetUserInfo(this.AccessToken as string);
-        }
-
-        protected virtual dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
-        {
-            return new
-            {
-                code = parameters["code"],
-                client_id = configuration.ClientId,
-                client_secret = configuration.ClientSecret,
-                redirect_uri = configuration.RedirectUri,
-                grant_type = "authorization_code"
-            };
-        }
-
-        /// <summary>
-        /// Issues query for access token and parses response.
-        /// </summary>
-        /// <param name="parameters">Callback request payload (parameters).</param>
-        private string GetAccessToken(NameValueCollection parameters)
-        {
             var client = _factory.NewClient();
             client.BaseUrl = AccessTokenServiceEndpoint.BaseUri;
 
@@ -147,40 +79,78 @@ namespace OAuth2.Client
             request.AddObject(this.BuildAccessTokenExchangeObject(parameters, _configuration));
 
             var response = client.Execute(request);
-            AfterGetAccessToken(response);
-
-            var content = response.Content;
+            string accessToken;
             try
             {
                 // response can be sent in JSON format
-                return (string) JObject.Parse(content).SelectToken(AccessTokenKey);
+                accessToken = (string) JObject.Parse(response.Content).SelectToken(AccessTokenKey);
             }
             catch (JsonReaderException)
             {
                 // or it can be in "query string" format (param1=val1&param2=val2)
-                return HttpUtility.ParseQueryString(content)[AccessTokenKey];
+                accessToken = HttpUtility.ParseQueryString(response.Content)[AccessTokenKey];
             }
+            return new Oauth2AccessToken(accessToken);
         }
 
-        /// <summary>
-        /// Obtains user information using provider API.
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        private UserInfo GetUserInfo(string accessToken)
+        public IRestResponse GetData(OauthAccessToken accessToken, string resource)
         {
+            var oauth2AccessToken = accessToken as Oauth2AccessToken;
+            Require.Argument("accessToken", oauth2AccessToken);
+
             var client = _factory.NewClient();
             client.BaseUrl = UserInfoServiceEndpoint.BaseUri;
-            client.Authenticator = new OAuth2UriQueryParameterAuthenticator(accessToken);
+            client.Authenticator = GetAuthenticator(oauth2AccessToken);
 
             var request = _factory.NewRequest();
-            request.Resource = UserInfoServiceEndpoint.Resource;
+            request.Resource = resource;
 
-            BeforeGetUserInfo(request);
+            return client.Execute(request);
+        }
 
-            var result = ParseUserInfo(client.Execute(request).Content);
-            result.ProviderName = ProviderName;
+        public UserInfo GetUserInfo(OauthAccessToken accessToken)
+        {
+            var restResponse = GetData(accessToken, UserInfoServiceEndpoint.Resource);
 
-            return result;
+            var userInfo = ParseUserInfo(restResponse.Content);
+            userInfo.ProviderName = ProviderName;
+
+            return userInfo;
+        }
+
+        #endregion
+
+        #region Private methods
+
+        protected virtual IAuthenticator GetAuthenticator(Oauth2AccessToken accessToken)
+        {
+            return new OAuth2UriQueryParameterAuthenticator(accessToken.Token);
+        }
+
+        protected virtual dynamic BuildRequestTokenExchangeObject(IClientConfiguration configuration,
+                                                                  string state = null)
+        {
+            return new
+                {
+                    response_type = "code",
+                    client_id = _configuration.ClientId,
+                    redirect_uri = _configuration.RedirectUri,
+                    scope = _configuration.Scope,
+                    state
+                };
+        }
+
+        protected virtual dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters,
+                                                                 IClientConfiguration configuration)
+        {
+            return new
+                {
+                    code = parameters["code"],
+                    client_id = configuration.ClientId,
+                    client_secret = configuration.ClientSecret,
+                    redirect_uri = configuration.RedirectUri,
+                    grant_type = "authorization_code"
+                };
         }
 
         /// <summary>
@@ -189,20 +159,6 @@ namespace OAuth2.Client
         /// <param name="content">The content which is received from provider.</param>
         protected abstract UserInfo ParseUserInfo(string content);
 
-        /// <summary>
-        /// Called just before issuing request to service when everything is ready.
-        /// Allows to add extra parameters to request or do any other needed preparations.
-        /// </summary>
-        protected virtual void BeforeGetUserInfo(IRestRequest request)
-        {
-        }
-
-        /// <summary>
-        /// Called just after obtaining response with access token from service.
-        /// Allows to read extra data returned along with access token.
-        /// </summary>
-        protected virtual void AfterGetAccessToken(IRestResponse response)
-        {
-        }
+        #endregion
     }
 }
