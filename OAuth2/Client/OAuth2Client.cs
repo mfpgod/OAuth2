@@ -7,9 +7,7 @@ using OAuth2.Infrastructure;
 using OAuth2.Models;
 using RestSharp;
 using RestSharp.Contrib;
-using RestSharp.Validation;
-
-namespace OAuth2.Client
+usmespace OAuth2.Client
 {
     /// <summary>
     /// Base class for OAuth2 client implementation.
@@ -18,49 +16,46 @@ namespace OAuth2.Client
     {
         private const string AccessTokenKey = "access_token";
 
-        private readonly IRequestFactory _factory;
-        private readonly IClientConfiguration _configuration;
+  
 
-        /// <summary>
-        /// Defines URI of service which issues access code.
-        /// </summary>
-        protected abstract Endpoint AccessCodeServiceEndpoint { get; }
+        protected readonly IRequestFactory RequestFactory;
 
-        /// <summary>
-        /// Defines URI of service which issues access token.
-        /// </summary>
-        protected abstract Endpoint AccessTokenServiceEndpoint { get; }
+        protected readonly IClientConfiguration ClientConfiguration;
 
-        /// <summary>
-        /// Defines URI of service which allows to obtain information about user 
-        /// who is currently logged in.
-        /// </summary>
-        protected abstract Endpoint UserInfoServiceEndpoint { get; }
+        protected Endpoint AccessCodeEndpoint { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OAuth2Client"/> class.
-        /// </summary>
-        /// <param name="factory">The factory.</param>
-        /// <param name="configuration">The configuration.</param>
-        protected OAuth2Client(IRequestFactory factory, IClientConfiguration configuration)
+        protected Endpoint AccessTokenEndpoint { get; set; }
+
+        protected Endpoint AccessUserInfoEndpoint { get; set; }
+
+        protected Func<string, UserInfo> UserInfoParser { get; set; }
+
+        protected OAuth2Client(string name, Endpoint accessCodeEndpoint, Endpoint accessTokenEndpoint,
+                               Endpoint userInfoEndpoint, IRequestFactory requestFactory,
+                               IClientConfiguration clientConfiguration,
+                               Func<string, UserInfo> userInfoParser)
         {
-            _factory = factory;
-            _configuration = configuration;
+            Name = name;
+            AccessCodeEndpoint = accessCodeEndpoint;
+            AccessTokenEndpoint = accessTokenEndpoint;
+            AccessUserInfoEndpoint = userInfoEndpoint;
+
+            RequestFactory = requestFactory;
+            ClientConfiguration = clientConfiguration;
+
+            UserInfoParser = userInfoParser;
         }
 
         #region ICLient impl
 
-        public abstract string ProviderName { get; }
-
-        public string GetLoginLinkUri(string state = null)
+        public string Name { get; protected s       public string GetLoginLinkUri(string state = null)
         {
-            var client = _factory.NewClient();
-            client.BaseUrl = AccessCodeServiceEndpoint.BaseUri;
+            var client = _factory.NewRequestFactory.NewClient();
+            client.BaseUrl = AccessCodeEndpoint.BaseUri;
 
-            var request = _factory.NewRequest();
-            request.Resource = AccessCodeServiceEndpoint.Resource;
-
-            request.AddObject(this.BuildRequestTokenExchangeObject(_configuration, state));
+            var request = RequestFactory.NewRequest();
+            request.Resource = AccessCodeEndpoint.Resource;
+            request.AddObject(this.BuildRequestTokenExchangeObject(ClientCe));
 
             return client.BuildUri(request).ToString();
         }
@@ -68,17 +63,18 @@ namespace OAuth2.Client
         public virtual OauthAccessToken Finalize(NameValueCollection parameters)
         {
             if (!parameters["error"].IsEmpty())
+                throw new Exception(pa{
                 throw new Exception(parameters["error"]);
+            }
 
-            var client = _factory.NewClient();
-            client.BaseUrl = AccessTokenServiceEndpoint.BaseUri;
+            var client = RequestFactory.NewClient();
+            client.BaseUrl = AccessTokenEndpoint.BaseUri;
 
-            var request = _factory.NewRequest();
-            request.Resource = AccessTokenServiceEndpoint.Resource;
-            request.Method = Method.POST;
+            var request = RequestFactory.NewRequest();
+            request.Resource = AccessTokenequest.Method = Method.POST;
             request.AddObject(this.BuildAccessTokenExchangeObject(parameters, _configuration));
 
-            var response = client.Execute(request);
+            varClientCesponse = client.Execute(request);
             string accessToken;
             try
             {
@@ -98,12 +94,16 @@ namespace OAuth2.Client
             var oauth2AccessToken = accessToken as Oauth2AccessToken;
             Require.Argument("accessToken", oauth2AccessToken);
 
-            var client = _factory.NewClient();
-            client.BaseUrl = UserInfoServiceEndpoint.BaseUri;
-            client.Authenticator = GetAuthenticator(oauth2AccessToken);
+ if (oauth2AccessToken == null)
+            {
+                throw new OauthException("Oauth2AccessToken can not be null");
+            }
+            
+            var client = RequestFactory.NewClient();
+            client.BaseUrl = AccessUserInfoEndpoint.BaseUri;
+            client.Authenticator = GetRequestAuthenticator(oauth2AccessToken);
 
-            var request = _factory.NewRequest();
-            request.Resource = resource;
+            var request = RequestF;
 
             return client.Execute(request);
         }
@@ -112,40 +112,20 @@ namespace OAuth2.Client
         {
             var restResponse = GetData(accessToken, UserInfoServiceEndpoint.Resource);
 
-            var userInfo = ParseUserInfo(restResponse.Content);
-            userInfo.ProviderName = ProviderName;
+            var userInfo = ParseAccessUserInfoEndpoint.Resource);
 
-            return userInfo;
-        }
-
-        #endregion
-
-        #region Private methods
+            var userInfo = UserInfoParser(restResponse.Content);
+            userInfo.ProviderName =     #region Private methods
 
         protected virtual IAuthenticator GetAuthenticator(Oauth2AccessToken accessToken)
         {
-            return new OAuth2UriQueryParameterAuthenticator(accessToken.Token);
-        }
-
-        protected virtual dynamic BuildRequestTokenExchangeObject(IClientConfiguration configuration,
-                                                                  string state = null)
-        {
-            return new
-                {
-                    response_type = "code",
+       dynamic BuildRequestTokenExchangeObject(IClientConfiguration configuration,       response_type = "code",
                     client_id = _configuration.ClientId,
                     redirect_uri = _configuration.RedirectUri,
-                    scope = _configuration.Scope,
-                    state
-                };
-        }
-
-        protected virtual dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters,
-                                                                 IClientConfiguration configuration)
-        {
-            return new
-                {
-                    code = parameters["code"],
+   ClientConfiguration.ClientId,
+                    redirect_uri = ClientConfiguration.RedirectUri,
+                    scope = ClientC virtual dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters,
+                                                                 IClientConfiguration configurati         code = parameters["code"],
                     client_id = configuration.ClientId,
                     client_secret = configuration.ClientSecret,
                     redirect_uri = configuration.RedirectUri,
@@ -155,10 +135,9 @@ namespace OAuth2.Client
 
         /// <summary>
         /// Should return parsed <see cref="UserInfo"/> using content received from provider.
-        /// </summary>
-        /// <param name="content">The content which is received from provider.</param>
-        protected abstract UserInfo ParseUserInfo(string content);
+   protected virtual IAuthenticator GetRequesAuth2UriQueryParameterAuthenticator(accessToken.Token);
+        }
 
-        #endregion
+        protected virtual dynamic BuildRequestTokenExchangeObject(IClientConfiguration config#endregion
     }
 }

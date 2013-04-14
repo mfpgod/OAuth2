@@ -60,8 +60,8 @@ namespace OAuth2.Tests.Client
             factory.Received(1).NewClient();
             factory.Received(1).NewRequest();
 
-            restClient.Received(1).BaseUrl = "https://AccessCodeServiceEndpoint";
-            restRequest.Received(1).Resource = "/AccessCodeServiceEndpoint";
+            restClient.Received(1).BaseUrl = "https://AccessCodeEndpoint";
+            restRequest.Received(1).Resource = "/AccessCodeEndpoint";
 
             restRequest.Received(1).AddObject(Arg.Is<object>(
                 x => x.AllPropertiesAreEqualTo(
@@ -108,8 +108,8 @@ namespace OAuth2.Tests.Client
             descendant.GetUserInfo(new NameValueCollection {{"code", "code"}});
 
             // assert
-            restClient.Received(1).BaseUrl = "https://AccessTokenServiceEndpoint";
-            restRequest.Received(1).Resource = "/AccessTokenServiceEndpoint";
+            restClient.Received(1).BaseUrl = "https://AccessTokenEndpoint";
+            restRequest.Received(1).Resource = "/AccessTokenEndpoint";
             restRequest.Received(1).Method = Method.POST;
             restRequest.Received(1).AddObject(Arg.Is<object>(x => x.AllPropertiesAreEqualTo(
                 new
@@ -134,8 +134,8 @@ namespace OAuth2.Tests.Client
             descendant.GetUserInfo(new NameValueCollection {{"code", "code"}});
 
             // assert
-            restClient.Received(1).BaseUrl = "https://UserInfoServiceEndpoint";
-            restRequest.Received(1).Resource = "/UserInfoServiceEndpoint";
+            restClient.Received(1).BaseUrl = "https://AccessUserInfoEndpoint";
+            restRequest.Received(1).Resource = "/AccessUserInfoEndpoint";
             restClient.Authenticator.Should().BeOfType<OAuth2UriQueryParameterAuthenticator>();
         }
 
@@ -152,8 +152,8 @@ namespace OAuth2.Tests.Client
                 {
                     return new Endpoint
                     {
-                        BaseUri = "https://AccessCodeServiceEndpoint",
-                        Resource = "/AccessCodeServiceEndpoint"
+                        BaseUri = "https://AccessCodeEndpoint",
+                        Resource = "/AccessCodeEndpoint"
                     };
                 }
             }
@@ -164,8 +164,8 @@ namespace OAuth2.Tests.Client
                 {
                     return new Endpoint
                     {
-                        BaseUri = "https://AccessTokenServiceEndpoint",
-                        Resource = "/AccessTokenServiceEndpoint"
+                        BaseUri = "https://AccessTokenEndpoint",
+                        Resource = "/AccessTokenEndpoint"
                     };
                 }
             }
@@ -176,8 +176,8 @@ namespace OAuth2.Tests.Client
                 {
                     return new Endpoint
                     {
-                        BaseUri = "https://UserInfoServiceEndpoint",
-                        Resource = "/UserInfoServiceEndpoint"
+                        BaseUri = "https://AccessUserInfoEndpoint",
+                        Resource = "/AccessUserInfoEndpoint"
                     };
                 }
             }

@@ -91,8 +91,8 @@ namespace OAuth2.Tests.Client
             factory.Received().NewClient();
             factory.Received().NewRequest();
 
-            restClient.Received().BaseUrl = "https://AccessTokenServiceEndpoint";
-            restRequest.Received().Resource = "/AccessTokenServiceEndpoint";
+            restClient.Received().BaseUrl = "https://AccessTokenEndpoint";
+            restRequest.Received().Resource = "/AccessTokenEndpoint";
             restRequest.Received().Method = Method.POST;
             
             restClient.Authenticator.Should().NotBeNull();
@@ -114,8 +114,8 @@ namespace OAuth2.Tests.Client
             factory.Received().NewClient();
             factory.Received().NewRequest();
 
-            restClient.Received().BaseUrl = "https://UserInfoServiceEndpoint";
-            restRequest.Received().Resource = "/UserInfoServiceEndpoint";
+            restClient.Received().BaseUrl = "https://AccessUserInfoEndpoint";
+            restRequest.Received().Resource = "/AccessUserInfoEndpoint";
 
             restClient.Authenticator.Should().NotBeNull();
             restClient.Authenticator.Should().BeAssignableTo<OAuth1Authenticator>();
@@ -160,8 +160,8 @@ namespace OAuth2.Tests.Client
                 {
                     return new Endpoint
                     {
-                        BaseUri = "https://AccessTokenServiceEndpoint",
-                        Resource = "/AccessTokenServiceEndpoint"
+                        BaseUri = "https://AccessTokenEndpoint",
+                        Resource = "/AccessTokenEndpoint"
                     };
                 }
             }
@@ -172,13 +172,13 @@ namespace OAuth2.Tests.Client
                 {
                     return new Endpoint
                     {
-                        BaseUri = "https://UserInfoServiceEndpoint",
-                        Resource = "/UserInfoServiceEndpoint"
+                        BaseUri = "https://AccessUserInfoEndpoint",
+                        Resource = "/AccessUserInfoEndpoint"
                     };
                 }
             }
 
-            public override string ProviderName
+            public override string Name
             {
                 get { return "OAuthClientTest"; }
             }

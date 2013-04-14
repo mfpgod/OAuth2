@@ -68,6 +68,7 @@
     <Compile Include="Client\IClient.cs" />
     <Compile Include="Client\OAuthClient.cs" />
     <Compile Include="Configuration\ConfigurationManager.cs" />
+    <Compile Include="Configlient\OauthException />
     <Compile Include="Configuration\IConfigurationManager.cs" />
     <Compile Include="Configuration\IOAuth2Configuration.cs" />
     <Compile Include="Configuration\IClientConfiguration.cs" />

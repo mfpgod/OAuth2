@@ -26,7 +26,7 @@ namespace OAuth2.Client.Impl
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowsLiveClient"/> class.
         /// </summary>
-        /// <param name="factory">The factory.</param>
+        /// <param name="factory">The factory.</parequestFam>
         /// <param name="configuration">The configuration.</param>
         public WindowsLiveClient(IRequestFactory factory, IClientConfiguration configuration) 
             : base(factory, configuration)
@@ -78,7 +78,7 @@ namespace OAuth2.Client.Impl
             }
         }
 
-        protected override IAuthenticator GetAuthenticator(Oauth2AccessToken accessToken)
+        protected override IAuthenticator GetAuthenticator(Reques(Oauth2AccessToken accessToken)
         {
             return new WindowsLiveOAuth2UriQueryParameterAuthenticator(accessToken.Token);
         }

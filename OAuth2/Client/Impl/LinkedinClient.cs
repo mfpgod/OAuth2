@@ -12,7 +12,7 @@ namespace OAuth2.Client.Impl
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkedInClient"/> class.
         /// </summary>
-        /// <param name="factory">The factory.</param>
+        /// <param name="factory">The requestFactory.</param>
         /// <param name="configuration">The configuration.</param>
         public LinkedInClient(IRequestFactory factory, IClientConfiguration configuration) 
             : base(factory, configuration)
@@ -91,7 +91,7 @@ namespace OAuth2.Client.Impl
         /// <summary>
         /// Friendly name of provider (OAuth service).
         /// </summary>
-        public override string ProviderName
+        public override string Name
         {
             get { return "LinkedIn"; }
         }

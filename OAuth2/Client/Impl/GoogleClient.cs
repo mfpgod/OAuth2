@@ -10,19 +10,16 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class GoogleClient : OAuth2Client
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GoogleClient"/> class.
-        /// </summary>
-        /// <param name="factory">The factory.</param>
-        /// <param name="configuration">The configuration.</param>
         public GoogleClient(IRequestFactory factory, IClientConfiguration configuration)
             : base(factory, configuration)
         {
         }
 
-        /// <summary>
-        /// Defines URI of service which issues access code.
-        /// </summary>
+        public override string ProviderName
+        {
+            get { return "Google"; }
+        }
+
         protected override Endpoint AccessCodeServiceEndpoint
         {
             get
@@ -35,9 +32,6 @@ namespace OAuth2.Client.Impl
             }
         }
 
-        /// <summary>
-        /// Defines URI of service which issues access token.
-        /// </summary>
         protected override Endpoint AccessTokenServiceEndpoint
         {
             get
@@ -50,9 +44,6 @@ namespace OAuth2.Client.Impl
             }
         }
 
-        /// <summary>
-        /// Defines URI of service which allows to obtain information about user which is currently logged in.
-        /// </summary>
         protected override Endpoint UserInfoServiceEndpoint
         {
             get
@@ -65,18 +56,6 @@ namespace OAuth2.Client.Impl
             }
         }
 
-        /// <summary>
-        /// Friendly name of provider (OAuth2 service).
-        /// </summary>
-        public override string ProviderName
-        {
-            get { return "Google"; }
-        }
-
-        /// <summary>
-        /// Should return parsed <see cref="UserInfo"/> from content received from third-party service.
-        /// </summary>
-        /// <param name="content">The content which is received from third-party service.</param>
         protected override UserInfo ParseUserInfo(string content)
         {
             var response = JObject.Parse(content);

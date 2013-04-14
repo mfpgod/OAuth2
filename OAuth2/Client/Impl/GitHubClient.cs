@@ -17,22 +17,39 @@ namespace OAuth2.Client.Impl
         {
         }
 
+        pride string ProviderName
+        {
+            get { return "GitHub"; }
+        }
+
+        /// <summaoverride Endpoint AccessCodeServiceEndpoint
+        {
+            get { return new Endpoint { BaseUri = "https://github.com", Resource = "/login/oauth/authorize" }; }
+        }
+
+        /// <summaoverride Endpoint AccessTokenServiceEndpoint
+        {
+            get { return new Endpoint { BaseUri = "https://github.com", Resource = "/login/oauth/access_token" }; }
+        }
+
+        /// <summaoverride Endpoint UserInfoServiceEndpoint
+        {
+            get { return new Endpoint { BaseUri = "https://api.github.com/", Resource = "/user" }; }
+        }        
+ 
+
         protected override dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
         {
             return new
-                {
-                    code = parameters["code"],
-                    client_id = configuration.ClientId,
-                    client_secret = configuration.ClientSecret,
-                    redirect_uri = configuration.RedirectUri,
-                    state = parameters["state"]
-                };
+               {
+                code = parameters["code"],
+                client_id = configuration.ClientId,
+                client_secret = configuration.ClientSecret,
+                redirect_uri = configuration.RedirectUri,
+                state = parameters["state"]
+            };
         }
 
-        /// <summary>
-        /// Should return parsed <see cref="UserInfo"/> from content received from third-party service.
-        /// </summary>
-        /// <param name="content">The content which is received from third-party service.</param>
         protected override UserInfo ParseUserInfo(string content)
         {
             var cnt = JObject.Parse(content);
@@ -49,36 +66,5 @@ namespace OAuth2.Client.Impl
             };
         }
 
-        /// <summary>
-        /// Friendly name of provider (OAuth2 service).
-        /// </summary>
-        public override string ProviderName
-        {
-            get { return "GitHub"; }
-        }
-
-        /// <summary>
-        /// Defines URI of service which issues access code.
-        /// </summary>
-        protected override Endpoint AccessCodeServiceEndpoint
-        {
-            get { return new Endpoint { BaseUri = "https://github.com", Resource = "/login/oauth/authorize" }; }
-        }
-
-        /// <summary>
-        /// Defines URI of service which issues access token.
-        /// </summary>
-        protected override Endpoint AccessTokenServiceEndpoint
-        {
-            get { return new Endpoint { BaseUri = "https://github.com", Resource = "/login/oauth/access_token" }; }
-        }
-
-        /// <summary>
-        /// Defines URI of service which allows to obtain information about user which is currently logged in.
-        /// </summary>
-        protected override Endpoint UserInfoServiceEndpoint
-        {
-            get { return new Endpoint { BaseUri = "https://api.github.com/", Resource = "/user" }; }
-        }        
     }
 }

@@ -47,7 +47,7 @@ namespace OAuth2.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="OAuthClient" /> class.
         /// </summary>
-        /// <param name="factory">The factory.</param>
+        /// <param name="factory">The factorequestFy.</param>
         /// <param name="configuration">The configuration.</param>
         protected OAuthClient(IRequestFactory factory, IClientConfiguration configuration)
         {
@@ -57,7 +57,7 @@ namespace OAuth2.Client
 
         #region IClient impl
 
-        public abstract string ProviderName { get; }
+        public abstract string ProviderNt; }
 
         public string GetLoginLinkUri(string state = null)
         {
@@ -101,9 +101,7 @@ namespace OAuth2.Client
             userInfo.ProviderName = ProviderName;
 
             return userInfo;
-        }
-
-        #endregion
+           #endregion
 
         #region Private methods
 

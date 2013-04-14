@@ -23,7 +23,7 @@ namespace OAuth2.Client
         /// Friendly name of provider (third-party authentication service). 
         /// Defined by client implementation developer and supposed to be unique.
         /// </summary>
-        string ProviderName { get; }
+        string Prov { get; }
 
         /// <summary>
         /// Returns URI of service which should be called in order to start authentication process. 
