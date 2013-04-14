@@ -12,30 +12,46 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class GitHubClient : OAuth2Client
     {
+        public static string ClientName = "GitHub";
+
+        public static readonly Endpoint CodeEndpoint = new Endpoint
+            {
+                BaseUri = "https://github.com",
+                Resource = "/login/oauth/authorize"
+            };
+
+        public static readonly Endpoint TokenEndpoint = new Endpoint
+            {
+                BaseUri = "https://github.com",
+                Resource = "/login/oauth/access_token"
+            };
+
+        public static readonly Endpoint UserInfoEndpoint = new Endpoint
+            {
+                BaseUri = "https://api.github.com/",
+                Resource = "/user"
+            };
+
+        public static UserInfo UserInfoParserFunc(string content)
+        {
+            var cnt = JObject.Parse(content);ar names = cnt["name"].Value<string>().Split(' ').ToList();
+            return new UserInfo
+            {
+                Email = cnt["emailProviderName = ClientName,
+                Email = cnt["email"].Value<string>()hotoUri = cnt["avatar_url"].Value<string>(),
+                Id = cnt["id"].Value<string>(),
+                FirstName = names.Count > 0 ? names.First() : cnt["login"].Value<string>(),
+                LastName = names.Count > 1 ? names.Last() : string.Empty,
+            };
+        }
+
+    }
+}
+
+
         public GitHubClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(factory, configuration)
-        {
-        }
-
-        pride string ProviderName
-        {
-            get { return "GitHub"; }
-        }
-
-        /// <summaoverride Endpoint AccessCodeServiceEndpoint
-        {
-            get { return new Endpoint { BaseUri = "https://github.com", Resource = "/login/oauth/authorize" }; }
-        }
-
-        /// <summaoverride Endpoint AccessTokenServiceEndpoint
-        {
-            get { return new Endpoint { BaseUri = "https://github.com", Resource = "/login/oauth/access_token" }; }
-        }
-
-        /// <summaoverride Endpoint UserInfoServiceEndpoint
-        {
-            get { return new Endpoint { BaseUri = "https://api.github.com/", Resource = "/user" }; }
-        }        
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
+        {        
  
 
         protected override dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
@@ -50,21 +66,5 @@ namespace OAuth2.Client.Impl
             };
         }
 
-        protected override UserInfo ParseUserInfo(string content)
-        {
-            var cnt = JObject.Parse(content);
-
-            var names = cnt["name"].Value<string>().Split(' ').ToList();
-            return new UserInfo
-            {
-                Email = cnt["email"].Value<string>(),
-                ProviderName = this.ProviderName,
-                PhotoUri = cnt["avatar_url"].Value<string>(),
-                Id = cnt["id"].Value<string>(),
-                FirstName = names.Count > 0 ? names.First() : cnt["login"].Value<string>(),
-                LastName = names.Count > 1 ? names.Last() : string.Empty,
-            };
-        }
-
-    }
+        p    }
 }

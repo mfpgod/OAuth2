@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 using OAuth2.Configuration;
 using OAuth2.Infrastructure;
 using OAuth2.Models;
-using RestSharp;
 
 namespace OAuth2.Client.Impl
 {
@@ -12,84 +11,43 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class InstagramClient : OAuth2Client
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InstagramClient"/> class.
-        /// </summary>
-        /// <param name="factory">The factory.</param>
-        /// <param name="configuration">The configuration.</param>
-        public InstagramClient(IRequestFactory factory, IClientConfiguration configuration) 
-            : base(factory, configuration)
-        {
-        }
+        public static string ClientName = "Instagram";
 
-        /// <summary>
-        /// Defines URI of service which issues access code.
-        /// </summary>
-        protected override Endpoint AccessCodeServiceEndpoint
+        public static readonly Endpoint CodeEndpoint = new Endpoint
         {
-            get
-            {
-                return new Endpoint
-                {
-                    BaseUri = "https://api.instagram.com",
-                    Resource = "/oauth/authorize"
-                };
-            }
-        }
+            BaseUri = "https://api.instagram.com",
+            Resource = "/oauth/authorize"
+        };
 
-        /// <summary>
-        /// Defines URI of service which issues access token.
-        /// </summary>
-        protected override Endpoint AccessTokenServiceEndpoint
+        public static readonly Endpoint TokenEndpoint = new Endpoint
         {
-            get
-            {
-                return new Endpoint
-                {
-                    BaseUri = "https://api.instagram.com",
-                    Resource = "/oauth/access_token"
-                };
-            }
-        }
+            BaseUri = "https://api.instagram.com",
+            Resource = "/oauth/access_token"
+        };
 
-        /// <summary>
-        /// Defines URI of service which allows to obtain information about user which is currently logged in.
-        /// </summary>
-        protected override Endpoint UserInfoServiceEndpoint
+        public static readonly Endpoint UserInfoEndpoint = new Endpoint
         {
-            get
-            {
-                return new Endpoint
-                {
-                    BaseUri = "https://api.instagram.com",
-                    Resource = "/oauth/access_token"
-                };
-            }
-        }
-        
-        /// <summary>
-        /// Should return parsed <see cref="UserInfo"/> from content received from third-party service.
-        /// </summary>
-        /// <param name="content">The content which is received from third-party service.</param>
-        protected override UserInfo ParseUserInfo(string content)
+            BaseUri = "https://api.instagram.com",
+            Resource = "/oauth/access_token"
+        };
+
+        public static UserInfo UserInfoParserFunc(string content)
         {
             var response = JObject.Parse(content);
             var names = response["user"]["full_name"].Value<string>().Split(' ');
             return new UserInfo
             {
+                ProviderName = ClientName,
                 Id = response["user"]["id"].Value<string>(),
-                FirstName = names.Count() > 0 ? names.First() : response["user"]["username"].Value<string>(),
+                FirstName = names.Any() ? names.First() : response["user"]["username"].Value<string>(),
                 LastName = names.Count() > 1 ? names.Last() : string.Empty,
                 PhotoUri = response["user"]["profile_picture"].Value<string>()
             };
         }
 
-        /// <summary>
-        /// Friendly name of provider (OAuth2 service).
-        /// </summary>
-        public override string ProviderName
+        public InstagramClient(IRequestFactory factory, IClientConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
-            get { return "Instagram"; }
         }
     }
 }

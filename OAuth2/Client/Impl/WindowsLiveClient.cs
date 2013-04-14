@@ -20,7 +20,7 @@ namespace OAuth2.Client.Impl
 
             public override void Authenticate(IRestClient client, IRestRequest request)
             {
-                request.AddParameter("access_token", (object)this.AccessToken, ParameterType.GetOrPost);
+                request.AddParameter("access_token", (object)thsToken, ParameterType.GetOrPost);
             }
         }
         ///

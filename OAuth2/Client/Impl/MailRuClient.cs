@@ -8,104 +8,65 @@ using RestSharp;
 namespace OAuth2.Client.Impl
 {
     /// <summary>
-    /// Mail.Ru authentication client.
+    /// MailRu authentication client.
     /// </summary>
     public class MailRuClient : OAuth2Client
     {
-        private readonly IClientConfiguration _configuration;
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MailRuClient"/> class.
-        /// </summary>
-        /// <param name="factory">The factory.</param>
-        /// <param name="configuration">The configuration.</param>
-        public MailRuClient(IRequestFactory factory, IClientConfiguration configuration) 
-            : base(factory, configuration)
+        internal class MailRuOAuth2UriQueryParameterAuthenticator : OAuth2Authenticator
         {
-            _configuration = configuration;
-        }
+            private readonly IClientConfiguration _clientConfiguration;
 
-        /// <summary>
-        /// Defines URI of service which issues access code.
-        /// </summary>
-        protected override Endpoint AccessCodeServiceEndpoint
-        {
-            get
+            public MailRuOAuth2UriQueryParameterAuthenticator(string accessToken, IClientConfiguration clientConfiguration)
+                : base(accessToken)
             {
-                return new Endpoint
-                {
-                    BaseUri = "https://connect.mail.ru",
-                    Resource = "/oauth/authorize"
-                };
+                _clientConfiguration = clientConfiguration;
+            }
+
+            public override void Authenticate(IRestClient client, IRestRequest request)
+            {
+                // Source documents
+                // http://api.mail.ru/docs/guides/restapi/
+                // http://api.mail.ru/docs/reference/rest/users.getInfo/
+
+                request.AddParameter("app_id", _clientConfiguration.ClientId);
+                request.AddParameter("method", "users.getInfo");
+                request.AddParameter("secure", "1");
+                request.AddParameter("session_key", AccessToken);
+
+                //sign=hex_md5('app_id={client_id}method=users.getInfosecure=1session_key={access_token}{secret_key}')
+                string signature = string.Concat(request.Parameters.OrderBy(x => x.Name).Select(x => string.Format("{0}={1}", x.Name, x.Value)).ToList());
+                signature = (signature + _clientConfiguration.ClientSecret).GetMd5Hash();
+
+                request.AddParameter("sig", signature); 
             }
         }
 
-        /// <summary>
-        /// Defines URI of service which issues access token.
-        /// </summary>
-        protected override Endpoint AccessTokenServiceEndpoint
-        {
-            get
+        public static string ClientName = "MailRu";
+
+        public static readonly Endpoint CodeEndpoint = new Endpoint
             {
-                return new Endpoint
-                {
-                    BaseUri = "https://connect.mail.ru",
-                    Resource = "/oauth/token"
-                };
-            }
-        }
+                BaseUri = "https://connect.mail.ru",
+                Resource = "/oauth/authorize"
+            };
 
-        /// <summary>
-        /// Defines URI of service which allows to obtain information about user which is currently logged in.
-        /// </summary>
-        protected override Endpoint UserInfoServiceEndpoint
-        {
-            get
+        public static readonly Endpoint TokenEndpoint = new Endpoint
             {
-                return new Endpoint
-                {
-                    BaseUri = "http://www.appsmail.ru",
-                    Resource = "/platform/api"                    
-                };
-            }
-        }
+                BaseUri = "https://connect.mail.ru",
+                Resource = "/oauth/token"
+            };
 
-        /// <summary>
-        /// Called just before issuing request to third-party service when everything is ready.
-        /// Allows to add extra parameters to request or do any other needed preparations.
-        /// </summary>
-        protected override void BeforeGetUserInfo(IRestRequest request)
-        {
-            // Source documents
-            // http://api.mail.ru/docs/guides/restapi/
-            // http://api.mail.ru/docs/reference/rest/users.getInfo/
+        public static readonly Endpoint UserInfoEndpoint = new Endpoint
+            {
+                BaseUri = "http://www.appsmail.ru",
+                Resource = "/platform/api"
+            };
 
-            request.AddParameter("app_id", _configuration.ClientId);
-            request.AddParameter("method", "users.getInfo");
-            request.AddParameter("secure", "1");            
-            request.AddParameter("session_key", AccessToken);
-
-            // workaround for current design, oauth_token is always present in URL, so we need emulate it for correct request signing 
-            var fakeParam = new Parameter { Name = "oauth_token", Value = AccessToken };
-            request.AddParameter(fakeParam);
-
-            //sign=hex_md5('app_id={client_id}method=users.getInfosecure=1session_key={access_token}{secret_key}')
-            string signature = string.Concat(request.Parameters.OrderBy(x => x.Name).Select(x => string.Format("{0}={1}", x.Name, x.Value)).ToList());            
-            signature = (signature+_configuration.ClientSecret).GetMd5Hash();
-            
-            request.Parameters.Remove(fakeParam);
-
-            request.AddParameter("sig", signature);            
-        }
-
-        /// <summary>
-        /// Should return parsed <see cref="UserInfo"/> from content received from third-party service.
-        /// </summary>
-        /// <param name="content">The content which is received from third-party service.</param>
-        protected override UserInfo ParseUserInfo(string content)
+        public static UserInfo UserInfoParserFunc(string content)
         {
             var response = JArray.Parse(content);
             return new UserInfo
             {
+                ProviderName = ClientName,
                 Id = response[0]["uid"].Value<string>(),
                 FirstName = response[0]["first_name"].Value<string>(),
                 LastName = response[0]["last_name"].Value<string>(),
@@ -114,12 +75,14 @@ namespace OAuth2.Client.Impl
             };
         }
 
-        /// <summary>
-        /// Friendly name of provider (OAuth2 service).
-        /// </summary>
-        public override string ProviderName
+        public MailRuClient(IRequestFactory factory, IClientConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
-            get { return "MailRu"; }
+        }
+
+        protected override IAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
+        {
+            return new MailRuOAuth2UriQueryParameterAuthenticator(accessToken.Token, ClientConfiguration);
         }
     }
 }
