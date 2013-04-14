@@ -84,7 +84,9 @@
     <Compile Include="Infrastructure\UriUtility.cs" />
     <Compile Include="Models\OauthAccessToken.cs" />
     <Compile Include="Models\UserInfo.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <CoClient\Oauth1AccessToken.cs" />
+    <Compile Include="Client\Oauth2AccessToken.cs" />
+    <Compile Include="ClientInclude="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
