@@ -44,28 +44,47 @@ namespace OAuth2.Client.Impl
                 Resource = "/me"
             };
 
-        public static UserInfo UserInfoParserFunc(string content)
-        {
-            var response = JObject.Parse(content);
-            return new UserInfo
-            {
-                ProviderName = ClientName,
-                Id = response["id"].Value<string>(),
-                FirstName = response["first_name"].Value<string>(),
-                LastName = response["last_name"].Value<string>(),
-                Email = response["emails"]["preferred"].Value<string>(),
-                PhotoUri = string.Format("https://cid-{0}.users.storage.live.com/users/0x{0}/myprofile/expressionprofile/profilephoto:Win8Static,UserTileSmall,UserTileStatic/MeControlXXLUserTile?ck=2&ex=24", response["id"].Value<string>())
-            };
-        }
-
-        public WindowsLiveClient(IRequestFactory factory, IClientConfiguration configuration)
+        public static UserInfo UserInfoParserFunc(striClientConfiguration configuration)
             : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
         }
 
-        protected override IAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
+  ride IAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
         {
             return new WindowsLiveOAuth2UriQueryParameterAuthenticator(accessToken.Token);
+        }
+    }
+}
+        protected override void ValidateResponse(IRestResponse response)
+        {
+            base.ValidateResponse(response);
+            if (response.Content.IsJson())
+            {
+                dynamic data = JObject.Parse(response.Content);
+                if (data.error != null)
+                {
+                    throw new ServiceDataException(data.error.message.ToString(), string.Empty, data.error.code.ToString());
+                }
+            }
+        }
+
+        protected override UserInfo ParseUserInfo(string content)
+        {
+            dynamic response = JObject.Parse(content);
+            var userInfo = new UserInfo
+            {
+                Id = response.id,
+                FirstName = response.first_name,
+                LastName = response.last_name,("https://cid-{0}.users.storage.live.com/users/0x{0}/myprofile/expressionprofile/profilephoto:Win8Static,UserTileSmall,UserTileStatic/MeControlXXLUserTile?ck=2&ex=24", response["id"].Value<string>())
+            };
+  .id)
+            };
+            if (response.emails != null)
+            {
+                userInfo.Email = response.emails.preferred;
+            }
+
+            return userInfo;
         }
     }
 }
