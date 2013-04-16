@@ -2,6 +2,7 @@ using Newtonsoft.Json.Linq;
 using OAuth2.Configuration;
 using OAuth2.Infrastructure;
 using OAuth2.Models;
+using RestSharp;
 
 namespace OAuth2.Client.Impl
 {
@@ -10,7 +11,7 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class FacebookClient : OAuth2Client
     {
-        public static string ClientName = "Facebook";
+        public static readonly string ClientName = "Facebook";
 
         public static readonly Endpoint CodeEndpoint = new Endpoint
             {
@@ -30,23 +31,42 @@ namespace OAuth2.Client.Impl
             Resource = "/me?fields=id,first_name,last_name,email,picture"
         };
 
-        public static UserInfo UserInfoParserFunc(string content)
+        public FacebookClient(IRequestFactory factory, IClientConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration)
         {
-            var response = JObject.Parse(content);
-            return new UserInfo
-            {
-                ProviderName = ClientName,
-                Id = response["id"].Value<string>(),
-                FirstName = response["first_name"].Value<string>(),
-                LastName = response["last_name"].Value<string>(),
-                Email = response["email"].Value<string>(),
-                PhotoUri = response["picture"]["data"]["url"].Value<string>()
-            };
         }
 
-        public FacebookClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
+        protected override void ValidateResponse(IRestResponse response)
         {
+            base.ValidateResponse(response);
+            if (response.Content.IsJson())
+            {
+                dynamic data = JObject.Parse(response.Content);
+                if (data.error != null)
+                {
+                    throw new ServiceDataException(data.error.message.ToString(), data.error.type.ToString(), data.error.code.ToString());
+                }
+            }
+        }
+
+        protected override UserInfo ParseUserInfo(string content)
+        {
+            dynamic response = JObject.Parse(content);
+
+            var user = new UserInfo
+            {
+                ProviderName = ClientName,
+                Id = response.id.ToString(),
+                FirstName = response.first_name,
+                LastName = response.last_name,
+                Email = response.email
+            };
+            if (response.picture != null && response.picture.data != null)
+            {
+                user.PhotoUri = response.picture.data.url;
+            }
+
+            return user;
         }
     }
 }

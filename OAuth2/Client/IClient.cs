@@ -23,7 +23,7 @@ namespace OAuth2.Client
         /// Friendly name of provider (third-party authentication service). 
         /// Defined by client implementation developer and supposed to be unique.
         /// </summary>
-        string Prov { get; }
+        string Name { get; }
 
         /// <summary>
         /// Returns URI of service which should be called in order to start authentication process. 
@@ -49,7 +49,7 @@ namespace OAuth2.Client
         /// Callback request payload (parameters).
         /// <example>Request.QueryString</example>
         /// </param>
-        IRestResponse GetData(OauthAccessToken accessToken, string resource);
+        IRestResponse GetData(OauthAccessToken accessToken, string baseUrl, string query);
 
         /// <summary>
         /// Obtains user information using third-party authentication service 

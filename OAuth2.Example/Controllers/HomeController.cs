@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Web.Mvc;
 using OAuth2.Client;
 using OAuth2.Example.Models;
@@ -13,11 +14,18 @@ namespace OAuth2.Example.Controllers
         private readonly AuthorizationRoot authorizationRoot;
 
         private const string ProviderNameKey = "providerName";
+        private const string ClientKey = "client";
 
         private string ProviderName
         {
             get { return (string)Session[ProviderNameKey]; }
             set { Session[ProviderNameKey] = value; }
+        }
+
+        private IClient Client
+        {
+            get { return (IClient)Session[ClientKey]; }
+            set { Session[ClientKey] = value; }
         }
 
         /// <summary>
@@ -47,7 +55,8 @@ namespace OAuth2.Example.Controllers
         public RedirectResult Login(string providerName)
         {
             ProviderName = providerName;
-            return new RedirectResult(GetClient().GetLoginLinkUri());
+            Client = GetClient();
+            return new RedirectResult(Client.GetLoginLinkUri(Guid.NewGuid().ToString()));
         }
 
         /// <summary>
@@ -55,14 +64,19 @@ namespace OAuth2.Example.Controllers
         /// </summary>
         public ActionResult Auth()
         {
-            var clinet = GetClient();
-            var accessToken = clinet.Finalize(Request.QueryString);
-            return View(clinet.GetUserInfo(accessToken));
+            if (Client != null)
+            {
+                var accessToken = Client.Finalize(Request.QueryString);
+                var userInfo = Client.GetUserInfo(accessToken);
+                Client = null;
+                return View(userInfo);
+            }
+            return View();
         }
 
         private IClient GetClient()
         {
-            return authorizationRoot.Clients.First(c => c.ProvName == ProviderName);
+            return authorizationRoot.Clients.First(c => c.Name == ProviderName);
         }
     }
 }

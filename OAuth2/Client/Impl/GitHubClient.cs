@@ -34,30 +34,28 @@ namespace OAuth2.Client.Impl
 
         public static UserInfo UserInfoParserFunc(string content)
         {
-            var cnt = JObject.Parse(content);ar names = cnt["name"].Value<string>().Split(' ').ToList();
+            var cnt = JObject.Parse(content);
+            var names = cnt["name"].Value<string>().Split(' ').ToList();
             return new UserInfo
             {
-                Email = cnt["emailProviderName = ClientName,
-                Email = cnt["email"].Value<string>()hotoUri = cnt["avatar_url"].Value<string>(),
+                ProviderName = ClientName,
+                Email = cnt["email"].Value<string>(),
+                PhotoUri = cnt["avatar_url"].Value<string>(),
                 Id = cnt["id"].Value<string>(),
                 FirstName = names.Count > 0 ? names.First() : cnt["login"].Value<string>(),
                 LastName = names.Count > 1 ? names.Last() : string.Empty,
             };
         }
 
-    }
-}
-
-
         public GitHubClient(IRequestFactory factory, IClientConfiguration configuration)
             : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
-        {        
- 
+        {
+        }
 
         protected override dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
         {
             return new
-               {
+            {
                 code = parameters["code"],
                 client_id = configuration.ClientId,
                 client_secret = configuration.ClientSecret,
@@ -65,6 +63,5 @@ namespace OAuth2.Client.Impl
                 state = parameters["state"]
             };
         }
-
-        p    }
+    }
 }

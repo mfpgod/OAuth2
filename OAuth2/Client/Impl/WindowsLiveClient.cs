@@ -20,10 +20,9 @@ namespace OAuth2.Client.Impl
 
             public override void Authenticate(IRestClient client, IRestRequest request)
             {
-                request.AddParameter("access_token", (object)thsToken, ParameterType.GetOrPost);
+                request.AddParameter("access_token", this.AccessToken, ParameterType.GetOrPost);
             }
         }
-        ///
 
         public static string ClientName = "WindowsLive";
 
@@ -46,10 +45,12 @@ namespace OAuth2.Client.Impl
             };
 
         public static UserInfo UserInfoParserFunc(string content)
-        {esponse = JObject.Parse(content);
+        {
+            var response = JObject.Parse(content);
             return new UserInfo
             {
-                Id = response["id"ProviderName = ClientName,d = response["id"].Value<string>(),
+                ProviderName = ClientName,
+                Id = response["id"].Value<string>(),
                 FirstName = response["first_name"].Value<string>(),
                 LastName = response["last_name"].Value<string>(),
                 Email = response["emails"]["preferred"].Value<string>(),
@@ -57,15 +58,14 @@ namespace OAuth2.Client.Impl
             };
         }
 
-      
-        }
-
         public WindowsLiveClient(IRequestFactory factory, IClientConfiguration configuration)
             : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
-        {        protected override IAuthenticator GetAuthenticator(Reques(Oauth2AccessToken accessToken)
+        {
+        }
+
+        protected override IAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
         {
             return new WindowsLiveOAuth2UriQueryParameterAuthenticator(accessToken.Token);
         }
-        
-        /// <}
+    }
 }

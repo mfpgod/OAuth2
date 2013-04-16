@@ -18,34 +18,16 @@ namespace OAuth2.Client
         private const string OAuthTokenKey = "oauth_token";
         private const string OAuthTokenSecretKey = "oauth_token_secret";
         private const string OAuthVerifierKey = "oauth_verifier";
-
-   
         
         private string _secret;
 
-        protected readonly IRequestFactory RequestFactory;
-
-        protected readonly IClientConfiguration ClientConfiguration      /// <summary>
-        /// Defines URI of service which is called for obtaining request token.
-        /// </summary>
-    
-        protected Endpoint AccessRequestTokenEndpoint { get; set; }     /// <summary>
-        /// Defines URI of service which is cashould be called to initiate authentication process.
-        /// </summary>
-        protected Endpoint AccessLoginEndpoint { get; set; }     /// <summary>
-        /// Defines URI of service which is callsues access token.
-        /// </summary>
-        protected Endpoint AccessTokenEndpoint { get; set; }     /// <summary>
-        /// Defines URI of service which is called for oto obtain user information.
-        /// </summary>
-        protected Endpoint AccessUserInfoEndpoint { get; set; }
-
-        protected Func<string, UserInfo> UserInfoParser { get; set; }
-
-        protected OAuthClient(string name, Endpoint requestTokenEndpoint, Endpoint loginEndpoint,
-                               Endpoint accessTokenEndpoint, Endpoint userInfoEndpoint, IRequestFactory requestFactory,
-                               IClientConfiguration clientConfiguration,
-                               Func<string, UserInfo> userInfoParser)
+        protected OAuthClient(string name,
+                              Endpoint requestTokenEndpoint,
+                              Endpoint loginEndpoint,
+                              Endpoint accessTokenEndpoint,
+                              Endpoint userInfoEndpoint,
+                              IRequestFactory requestFactory,
+                              IClientConfiguration clientConfiguration)
         {
             Name = name;
             AccessRequestTokenEndpoint = requestTokenEndpoint;
@@ -55,101 +37,168 @@ namespace OAuth2.Client
 
             RequestFactory = requestFactory;
             ClientConfiguration = clientConfiguration;
-
-            UserInfoParser = userInfoParser;
         }
 
+        protected IRequestFactory RequestFactory { get; set; }
+
+        protected IClientConfiguration ClientConfiguration { get; set; }
+
+        /// <summary>
+        /// Defines URI of service which is called for obtaining request token.
+        /// </summary>
+        protected Endpoint AccessRequestTokenEndpoint { get; set; }
+
+        /// <summary>
+        /// Defines URI of service which should be called to initiate authentication process.
+        /// </summary>
+        protected Endpoint AccessLoginEndpoint { get; set; }
+
+        /// <summary>
+        /// Defines URI of service which issues access token.
+        /// </summary>
+        protected Endpoint AccessTokenEndpoint { get; set; }
+
+        /// <summary>
+        /// Defines URI of service which is called to obtain user information.
+        /// </summary>
+        protected Endpoint AccessUserInfoEndpoint { get; set; }
 
         #region IClient impl
 
-        public string Name { get; protected s      public string GetLoginLinkUri(string state = null)
+        public string Name { get; protected set; }
+
+        public string GetLoginLinkUri(string state = null)
         {
             return GetLoginRequestUri(GetRequestToken(), state);
         }
         
         public OauthAccessToken Finalize(NameValueCollection parameters)
         {
-            Require.Argument(OAuthTokenKey, parameters[OAuthTokenKey]);
-            Require.Argument(OAuthVerifierKey, parameters[OAuthVerifierKey]);
+            this.ValidateParameters(parameters);
+
+            if (parameters[OAuthTokenKey] == null)
+            {
+                throw new OauthException("{0} was not found.".Fill(OAuthTokenKey));
+            }
+
+            if (parameters[OAuthVerifierKey] == null)
+            {
+                throw new OauthException("{0} was not found.".Fill(OAuthVerifierKey));
+            }
 
             var newParameters = GetAccessToken(parameters[OAuthTokenKey], parameters[OAuthVerifierKey]);
 
-            Require.Argument(OAuthTokenKey, newParameters[OAuthTokenKey]);
-            Require.Argument(OAuthTokenSecretKey, newParameters[OAuthTokenSecretKey]);
+            if (newParameters[OAuthTokenKey] == null)
+            {
+                throw new OauthException("{0} was not found.".Fill(OAuthTokenKey));
+            }
+
+            if (newParameters[OAuthTokenSecretKey] == null)
+            {
+                throw new OauthException("{0} was not found.".Fill(OAuthTokenSecretKey));
+            }
 
             return new Oauth1AccessToken(newParameters[OAuthTokenKey], newParameters[OAuthTokenSecretKey]);
         }
 
-        public IRestResponse GetData(OauthAccessToken accessToken, string resource)
+        public IRestResponse GetData(OauthAccessToken accessToken, string baseUrl, string query)
         {
             var oauth1AccessToken = accessToken as Oauth1AccessToken;
             Require.Argument("accessToken", oauth1AccessToken);
 
-            var client = _factory.NewClient();
-            RequestFactory.NewClient();
-            client.BaseUrl = AccessUserInfoticator.ForRequestToken(
-                _configuration.ClientId, _configuratProtectedResource(
+            var client = RequestFactory.NewClient();
+            client.BaseUrl = baseUrl;
+            client.Authenticator = OAuth1Authenticator.ForProtectedResource(
                 ClientConfiguration.ClientId, ClientConfiguration.ClientSecret, oauth1AccessToken.Token, oauth1AccessToken.TokenSecret);
 
-            var request = RequestFt.Resource = resource;
+            var request = RequestFactory.NewRequest();
+            request.AddResourceWithQuery(query);
 
-            return client.Execute(request);
+            var response = client.Execute(request);
+            ValidateResponse(response);
+            return response;
         }
 
         public UserInfo GetUserInfo(OauthAccessToken accessToken)
         {
-            var restResponse = GetData(accessToken, UserInfoServiceEndpoint.Resource);
+            var restResponse = GetData(accessToken, AccessUserInfoEndpoint.BaseUri, AccessUserInfoEndpoint.Resource);
+            
+            var userInfo = this.ParseUserInfo(restResponse.Content);
+            
+            return userInfo;
+        }
 
-           AccessUserInfoEndpoint.Resource);
-
-            var userInfo = UserInfoParser(restResponse.Content);
-            ndregion
+        #endregion
 
         #region Private methods
+
+        protected virtual void ValidateParameters(NameValueCollection parameters)
+        {
+            if (!string.IsNullOrEmpty(parameters["oauth_problem"]))
+            {
+                throw new OauthException(parameters["oauth_problem"]);
+            }
+        }
+
+        protected virtual void ValidateResponse(IRestResponse response)
+        {
+            if (response.ErrorException != null)
+            {
+                throw new ServiceDataException(response.ErrorMessage, response.ErrorException);
+            }
+        }
 
         /// <summary>
         /// Issues request for request token and returns result.
         /// </summary>
         private NameValueCollection GetRequestToken()
         {
-            var client = _factory.NewClient();
-            client.BaseUrl = RequestTokenSRequestFactory.NewClient();
-            client.BaseUrl = AccessRequestTokenticator.ForRequestToken(
-                _configuration.ClientId, _configuration.ClientSecret, _configuratioClientConfiguration.ClientId, ClientConfiguration.ClientSecret, ClientConfiguration.RedirectUri);
+            var client = RequestFactory.NewClient();
+            client.BaseUrl = AccessRequestTokenEndpoint.BaseUri;
+            client.Authenticator = OAuth1Authenticator.ForRequestToken(
+                ClientConfiguration.ClientId, ClientConfiguration.ClientSecret, ClientConfiguration.RedirectUri);
 
             var request = RequestFactory.NewRequest();
-            request.Resource = AccessRequestToken    var response = client.Execute(request);
-            return HttpUtility.ParseQueryString(response.Content);
+            request.Resource = AccessRequestTokenEndpoint.Resource;
+            request.Method = Method.POST;
+
+            var response = client.Execute(request);
+            this.ValidateResponse(response);
+
+            var parameters = HttpUtility.ParseQueryString(response.Content);
+            ValidateParameters(parameters);
+
+            return parameters;
         }
 
         /// <summary>
         /// Composes login link URI.
         /// </summary>
-        /// <param name="response">Content of response for request token request.</param>
+        /// <param name="parameters">Content of parameters for request token request.</param>
         /// <param name="state">Any additional information needed by application.</param>
-        private string GetLoginRequestUri(NameValueCollection response, string state = null)
+        private string GetLoginRequestUri(NameValueCollection parameters, string state = null)
         {
-            if (response[OAuthTokenKey] == null)
+            if (parameters[OAuthTokenKey] == null)
             {
-                throw new ArgumentException("{0} was not found.", OAuthTokenKey);
-            }
-            if (response[OAuthTokenSecretKey] == null)
-            {
-                throw new ArgumentException("{0} key was not found.", OAuthTokenSecretKey);
+                throw new OauthException("{0} was not found.".Fill(OAuthTokenKey));
             }
 
-            var client = _factory.NewClient();
-            client.BaseUrl = LoginServiceEndpoint.BaseUri;
+            if (parameters[OAuthTokenSecretKey] == null)
+            {
+                throw new OauthException("{0} was not found.".Fill(OAuthTokenSecretKey));
+            }
 
-           RequestFactory.NewClient();
+            var client = RequestFactory.NewClient();
             client.BaseUrl = AccessLoginEndpoint.BaseUri;
 
             var request = RequestFactory.NewRequest();
-            request.Resource = AccessLogin        if (!state.IsEmpty())
+            request.Resource = AccessLoginEndpoint.Resource;
+            request.AddParameter(OAuthTokenKey, parameters[OAuthTokenKey]);
+            if (!state.IsEmpty())
             {
                 request.AddParameter("state", state);
             }
-            _secret = response[OAuthTokenSecretKey];
+            _secret = parameters[OAuthTokenSecretKey];
 
             return client.BuildUri(request).ToString();
         }
@@ -162,21 +211,24 @@ namespace OAuth2.Client
         /// <returns>Access token and other extra info.</returns>
         private NameValueCollection GetAccessToken(string token, string verifier)
         {
-            var client = _factory.NewClient();
-            client.BaseUrl = AccessTokenServiceEndpoint.BaseUri;
-            client.AuthenticaRequestFactory.NewClient();
-            client.BaseUrl = AccessTokenticator.ForRequestToken(
-                _configuration.ClientId, _configuratAccessToken(
+            var client = RequestFactory.NewClient();
+            client.BaseUrl = AccessTokenEndpoint.BaseUri;
+            client.Authenticator = OAuth1Authenticator.ForAccessToken(
                 ClientConfiguration.ClientId, ClientConfiguration.ClientSecret, token, _secret, verifier);
 
             var request = RequestFactory.NewRequest();
-            request.Resource = AccessToken    var response = client.Execute(request);
+            request.Resource = AccessTokenEndpoint.Resource;
+            request.Method = Method.POST;
+
+            var response = client.Execute(request);
             return HttpUtility.ParseQueryString(response.Content);
         }
 
-        /// <summary>
-        /// Composes login link URI.
-        /// </summary>
-   #endregion
+        protected virtual UserInfo ParseUserInfo(string content)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

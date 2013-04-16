@@ -1,3 +1,5 @@
+using System.Collections.Specialized;
+
 using Newtonsoft.Json.Linq;
 
 using OAuth2.Configuration;
@@ -11,36 +13,30 @@ namespace OAuth2.Client.Impl
     /// <summary>
     /// LinkedIn authentication client.
     /// </summary>
-    public class LinkedInClient : OAuthClient
+    public class LinkedInOauth2Client : OAuth2Client
     {
-        public static readonly string ClientName = "LinkedIn";
+        public static readonly string ClientName = "LinkedInOauth2";
 
-        public static readonly Endpoint RequestTokenEndpoint = new Endpoint
-        {
-            BaseUri = "https://api.linkedin.com",
-            Resource = "/uas/oauth/requestToken"
-        };
-
-        public static readonly Endpoint LoginEndpoint = new Endpoint
+        public static readonly Endpoint CodeEndpoint = new Endpoint
         {
             BaseUri = "https://www.linkedin.com",
-            Resource = "/uas/oauth/authorize"
+            Resource = "/uas/oauth2/authorization"
         };
-        
+
         public static readonly Endpoint TokenEndpoint = new Endpoint
         {
-            BaseUri = "https://api.linkedin.com",
-            Resource = "/uas/oauth/accessToken"
+            BaseUri = "https://www.linkedin.com",
+            Resource = "/uas/oauth2/accessToken"
         };
 
         public static readonly Endpoint UserInfoEndpoint = new Endpoint
         {
-            BaseUri = "http://api.linkedin.com",
+            BaseUri = "https://api.linkedin.com",
             Resource = "/v1/people/~:(id,first-name,last-name,picture-url)?format=json"
         };
 
-        public LinkedInClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(ClientName, RequestTokenEndpoint, LoginEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration)
+        public LinkedInOauth2Client(IRequestFactory factory, IClientConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration)
         {
         }
 
@@ -57,12 +53,26 @@ namespace OAuth2.Client.Impl
             }
         }
 
+        protected override dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
+        {
+            return new
+            {
+                code = parameters["code"],
+                client_id = configuration.ClientId,
+                client_secret = configuration.ClientSecret,
+                redirect_uri = configuration.RedirectUri,
+                grant_type = "authorization_code",
+                state = parameters["state"]
+            };
+        }
+
         protected override UserInfo ParseUserInfo(string content)
         {
             dynamic response = JObject.Parse(content);
 
             var user = new UserInfo
             {
+                ProviderName = ClientName,
                 Id = response.id.ToString(),
                 FirstName = response.firstName,
                 LastName = response.lastName,

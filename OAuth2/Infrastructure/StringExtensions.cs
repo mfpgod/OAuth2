@@ -39,6 +39,11 @@ namespace OAuth2.Infrastructure
             return string.IsNullOrWhiteSpace(line);
         }
 
+        public static bool IsJson(this string value)
+        {
+            var val = value.TrimStart();
+            return val[0] == '{' || val[0] == '[';
+        }
 
         /// <summary>
         /// Returns MD5 Hash of input.

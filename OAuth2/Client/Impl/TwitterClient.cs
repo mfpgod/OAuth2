@@ -10,7 +10,7 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class TwitterClient : OAuthClient
     {
-        public static string ClientName = "Twitter";
+        public static readonly string ClientName = "Twitter";
 
         public static readonly Endpoint RequestTokenEndpoint = new Endpoint
             {
@@ -36,13 +36,17 @@ namespace OAuth2.Client.Impl
                 Resource = "/1.1/account/verify_credentials.json"
             };
 
-        public static UserInfo UserInfoParserFunc(string content)
+        public TwitterClient(IRequestFactory factory, IClientConfiguration configuration)
+            : base(ClientName, RequestTokenEndpoint, LoginEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration)
         {
-            var response = JObject.Parse(content);
+        }
 
-            var name = response["name"].Value<string>();
+        protected override UserInfo ParseUserInfo(string content)
+        {
+            dynamic response = JObject.Parse(content);
+
+            var name = response.name.ToString();
             var index = name.IndexOf(' ');
-
             string firstName;
             string lastName;
             if (index == -1)
@@ -58,18 +62,11 @@ namespace OAuth2.Client.Impl
 
             return new UserInfo
             {
-                Id = response["id"].Value<string>(),
-                Email = null,
-                PhotoUri = response["profile_image_url"].Value<string>(),
+                Id = response.id,
+                PhotoUri = response.profile_image_url,
                 FirstName = firstName,
                 LastName = lastName
             };
-        }
-
-        public TwitterClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(ClientName, RequestTokenEndpoint, LoginEndpoint, TokenEndpoint,
-                   UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
-        {
         }
     }
 }
