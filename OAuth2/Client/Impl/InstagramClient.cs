@@ -11,7 +11,7 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class InstagramClient : OAuth2Client
     {
-        public static string ClientName = "Instagram";
+        public static string CreadonlyClientName = "Instagram";
 
         public static readonly Endpoint CodeEndpoint = new Endpoint
         {
@@ -31,9 +31,15 @@ namespace OAuth2.Client.Impl
             Resource = "/oauth/access_token"
         };
 
-        public static UserInfo UserInfoParserFunc(string content)
+        public static UserInfo UserInfoParsClientConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
-            var response = JObject.Parse(content);
+        }
+ )
+        {
+        }
+
+        protected override UserInfo ParseUserInfo           var response = JObject.Parse(content);
             var names = response["user"]["full_name"].Value<string>().Split(' ');
             return new UserInfo
             {
@@ -45,9 +51,5 @@ namespace OAuth2.Client.Impl
             };
         }
 
-        public InstagramClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
-        {
-        }
-    }
+        public InstagramClient(IRequestF    }
 }

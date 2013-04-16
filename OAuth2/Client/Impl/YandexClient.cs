@@ -11,7 +11,7 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class YandexClient : OAuth2Client
     {
-        public static string ClientName = "Yandex";
+        public static string CreadonlyClientName = "Yandex";
 
         public static readonly Endpoint CodeEndpoint = new Endpoint
         {
@@ -31,27 +31,28 @@ namespace OAuth2.Client.Impl
             Resource = "/info"
         };
 
-        public static UserInfo UserInfoParserFunc(string content)
+        public static UserInfo UserInfoParsentConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
-            var response = JObject.Parse(content);
+        }
+
+)
+        {
+        }
+
+        protected override UserInfo ParseUserInfo           var response = JObject.Parse(content);
             var names = response["real_name"].Value<string>().Split(' ');
             return new UserInfo
             {
                 ProviderName = ClientName,
-                Id = response["id"].Value<string>(),
+       ,
                 FirstName = names.Any() ? names.First() : response["display_name"].Value<string>(),
                 LastName = names.Count() > 1 ? names.Last() : string.Empty,
                 Email = response["default_email"].Value<string>(),
             };
         }
 
-        public YandexClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
-        {
-        }
-
-        /// <summary>
-        /// Called just before issuing request to third-party service when everything is ready.
+        public YandexClient(IRequestFactory factorsuing request to third-party service when everything is ready.
         /// Allows to add extra parameters to request or do any other needed preparations.
         /// </summary>
         //        protected override void BeforeGetUserInfo(IRestRequest request)

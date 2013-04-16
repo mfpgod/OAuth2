@@ -10,7 +10,7 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class FoursquareClient : OAuth2Client
     {
-        public static string ClientName = "Foursquare";
+        public static strinreadonlyng ClientName = "Foursquare";
 
         public static readonly Endpoint CodeEndpoint = new Endpoint
             {
@@ -30,26 +30,24 @@ namespace OAuth2.Client.Impl
                 Resource = "/v2/users/self"
             };
 
-        public static UserInfo UserInfoParserFunc(string content)
+        public static UserInfo UserInfoPry factory, IClientConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
+        {)
+        {
+        }
+
+        protected override UserInfo ParseUserInfo(string content)
         {
             var response = JObject.Parse(content);
             return new UserInfo
             {
                 ProviderName = ClientName,
                 Id = response["response"]["user"]["id"].Value<string>(),
-                FirstName = response["response"]["user"]["firstName"].Value<string>(),
-                LastName = response["response"]["user"]["lastName"].Value<string>(),
+                FirstName = response["response"]["user"]["firstName"].Value<string>(), response["response"]["user"]["lastName"].Value<string>(),
+                Email = re
                 Email = response["response"]["user"]["contact"]["email"].Value<string>(),
                 PhotoUri = response["response"]["user"]["photo"].Value<string>()
-            };
-        }
-
-        public FoursquareClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
-        {
-        }
-
-        /// <summary>
+            };>
         /// Called just before issuing request to third-party service when everything is ready.
         /// Allows to add extra parameters to request or do any other needed preparations.
         /// </summary>

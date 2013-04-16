@@ -45,7 +45,7 @@ namespace OAuth2.Client.Impl
         }
 
         public static string ClientName = "Odnoklassniki";
-        
+ readonly        
         public static readonly Endpoint CodeEndpoint = new Endpoint
         {
             BaseUri = "http://www.odnoklassniki.ru",
@@ -65,8 +65,16 @@ namespace OAuth2.Client.Impl
         };
 
         public static UserInfo UserInfoParserFunc(string content)
+       guration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
-            var response = JObject.Parse(content);
+        }
+
+        protected override IA)
+        {
+        }
+
+        protected override UserInfo ParseUserInfoect.Parse(content);
             return new UserInfo
             {
                 ProviderName = ClientName,
@@ -77,12 +85,7 @@ namespace OAuth2.Client.Impl
             };
         }
 
-        public OdnoklassnikiClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
-        {
-        }
-
-        protected override IAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
+        public OdnoklassnikiClient(IRequestFactory factory, IClientConfigurationccessToken)
         {
             return new OdnoklassnikiOAuth2UriQueryParameterAuthenticator(accessToken.Token, ClientConfiguration);
         }

@@ -61,8 +61,7 @@
     <Compile Include="Client\Impl\InstagramClient.cs" />
     <Compile Include="Client\Impl\LinkedInOauth2Client.cs" />
     <Compile Include="Client\Impl\MailRuClient.cs" />
-    <Compile Include="Client\Impl\OdnoklassnikiClient.cs" />
-    <Compile Include="Client\Impl\TwitterClient.cs" />
+    <Compile Include="Client\Impl\OdnoklawitterClient.cs" />
     <Compile Include="Client\Impl\VKontakteClient.cs" />
     <Compile Include="Client\Impl\WindowsLiveClient.cs" />
     <Compile Include="Client\Impl\YandexClient.cs" />

@@ -23,9 +23,7 @@ namespace OAuth2.Client
                                Endpoint userInfoEndpoint,
                                IRequestFactory requestFactory,
                                IClientConfiguration clientConfiguration,
-                               Func<string, UserInfo> userInfoParser = null)
-        {
-            Name = name;
+                     Name = name;
             AccessCodeEndpoint = accessCodeEndpoint;
             AccessTokenEndpoint = accessTokenEndpoint;
             AccessUserInfoEndpoint = userInfoEndpoint;
