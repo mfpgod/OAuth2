@@ -15,7 +15,19 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class LinkedInOauth2Client : OAuth2Client
     {
-        public static readonly string ClientName = "LinkedInOauth2";
+        public static internal class LinkedInOAuth2UriQueryParameterAuthenticator : OAuth2Authenticator
+        {
+            public LinkedInOAuth2UriQueryParameterAuthenticator(string accessToken)
+                : base(accessToken)
+            {
+            }
+
+            public override void Authenticate(IRestClient client, IRestRequest request)
+            {
+                request.AddParameter("oauth2_access_token", this.AccessToken, ParameterType.GetOrPost);
+            }
+        }
+ic static readonly string ClientName = "LinkedInOauth2";
 
         public static readonly Endpoint CodeEndpoint = new Endpoint
         {
@@ -53,7 +65,9 @@ namespace OAuth2.Client.Impl
             }
         }
 
-        protected override dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
+        protected override dynamic BuildAccessTokenExchangeObject(NameValueCollIAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
+        {
+            return new LinkedInOAuth2UriQueryParameterAuthenticator(accessToken.Token);ildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
         {
             return new
             {

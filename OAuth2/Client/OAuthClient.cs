@@ -77,16 +77,7 @@ namespace OAuth2.Client
             this.ValidateParameters(parameters);
 
             if (parameters[OAuthTokenKey] == null)
-            {
-                throw new OauthException("{0} was not found.".Fill(OAuthTokenKey));
-            }
-
-            if (parameters[OAuthVerifierKey] == null)
-            {
-                throw new OauthException("{0} was not found.".Fill(OAuthVerifierKey));
-            }
-
-            var newParameters = GetAccessToken(parameters[OAuthTokenKey], parameters[OAuthVerifierKey]);
+        ey], parameters[OAuthVerifierKey]);
 
             if (newParameters[OAuthTokenKey] == null)
             {
@@ -192,21 +183,26 @@ namespace OAuth2.Client
             client.BaseUrl = AccessLoginEndpoint.BaseUri;
 
             var request = RequestFactory.NewRequest();
+    _secret = parameters[OAuthTokenSecretKey];wRequest();
             request.Resource = AccessLoginEndpoint.Resource;
             request.AddParameter(OAuthTokenKey, parameters[OAuthTokenKey]);
             if (!state.IsEmpty())
             {
                 request.AddParameter("state", state);
             }
-            _secret = parameters[OAuthTokenSecretKey];
+    s(this.BuildLoginRequestUriParameters(parameters, ClientConfiguration, state));
 
             return client.BuildUri(request).ToString();
         }
 
-        /// <summary>
-        /// Obtains access token by calling corresponding service.
-        /// </summary>
-        /// <param name="token">Token posted with callback issued by provider.</param>
+        protected virtual NameValueCollection BuildLoginRequestUriParameters(NameValueCollection parameters, IClientConfiguration configuration, string state)
+        {
+            var loginRequestUriParameters = new NameValueCollection {{OAuthTokenKey, parameters[OAuthTokenKey]}};
+            if (!state.IsEmpty())
+            {
+                loginRequestUriParameters.Add("state", state);
+            }
+            return loginRequestUriParametersith callback issued by provider.</param>
         /// <param name="verifier">Verifier posted with callback issued by provider.</param>
         /// <returns>Access token and other extra info.</returns>
         private NameValueCollection GetAccessToken(string token, string verifier)

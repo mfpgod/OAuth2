@@ -52,6 +52,7 @@
     </Compile>
     <Compile Include="AuthorizationRoot.cs" />
     <Compile Include="Client\Impl\LinkedInClient.cs" />
+    <Compile Include="Client\SeDropboxClienlient.cs" />
     <Compile Include="Client\ServiceDataException.cs" />
     <Compile Include="Client\Impl\FacebookClient.cs" />
     <Compile Include="Client\Impl\FoursquareClient.cs" />
