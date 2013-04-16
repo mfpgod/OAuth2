@@ -51,7 +51,7 @@ namespace OAuth2.Client
         /// </param>
         IRestResponse GetData(OauthAccessToken accessToken, string baseUrl, string query);
 
-        /// <summary>
+        ///, NameValueCollection extraParameters = null <summary>
         /// Obtains user information using third-party authentication service 
         /// using data provided via callback request.
         /// </summary>

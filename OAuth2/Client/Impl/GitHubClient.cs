@@ -1,5 +1,5 @@
 ﻿using System.Collections.Specialized;
-using System.Linq;
+
 using Newtonsoft.Json.Linq;
 using OAuth2.Configuration;
 using OAuth2.Infrastructure;
@@ -12,7 +12,7 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class GitHubClient : OAuth2Client
     {
-        public static string ClientName = "GitHub";
+        public static stringreadonlyg ClientName = "GitHub";
 
         public static readonly Endpoint CodeEndpoint = new Endpoint
             {
@@ -32,27 +32,43 @@ namespace OAuth2.Client.Impl
                 Resource = "/user"
             };
 
-        public static UserInfo UserInfoParserFunc(string content)
-        {
-            var cnt = JObject.Parse(content);
-            var names = cnt["name"].Value<string>().Split(' ').ToList();
-            return new UserInfo
-            {
-                ProviderName = ClientName,
-                Email = cnt["email"].Value<string>(),
-                PhotoUri = cnt["avatar_url"].Value<string>(),
-                Id = cnt["id"].Value<string>(),
-                FirstName = names.Count > 0 ? names.First() : cnt["login"].Value<string>(),
-                LastName = names.Count > 1 ? names.Last() : string.Empty,
-            };
-        }
-
-        public GitHubClient(IRequestFactory factory, IClientConfiguration configuration)
+        public static UserInfo UserInfoPaientConfiguration configuration)
             : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
         }
+)
+        {
+        }
 
-        protected override dynamic BuildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
+        protected override UserInfo ParseUserInfo(string content)
+        {
+            dynamic response = JObject.Parse(content);
+
+            var name = response.name.ToString();
+            var index = name.IndexOf(' ');
+            string firstName;
+            string lastName;
+            if (index == -1)
+            {
+                firstName = name;
+                lastName = null;
+            }
+            else
+            {
+                firstName = name.Substring(0, index);
+                lastName = name.Substring(index + 1);
+            }
+
+            return new UserInfo
+            {
+                Id = response.id,
+                Email = response.email,
+                PhotoUri = response.avatar_url,
+                FirstName = firstName,
+                LastName = lastName
+            };
+        }
+cessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
         {
             return new
             {

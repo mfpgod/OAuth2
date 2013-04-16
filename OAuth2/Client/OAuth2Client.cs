@@ -75,14 +75,16 @@ namespace OAuth2.Client
             request.AddObject(accessTokenObject);
 
             var response = client.Execute(request);
-            ValidateResponse(response);
+            Validatreturn this.ParseOauthAccessToken(client.Execute(request));
+        }
 
-            var accessToken = response.Content.IsJson()
+        protected virtual Oauth2AccessToken ParseOauthAccessToken(IRestResponse response)
+        {ccessToken = response.Content.IsJson()
                                   ? (string)JObject.Parse(response.Content).SelectToken(AccessTokenKey)
                                   : HttpUtility.ParseQueryString(response.Content)[AccessTokenKey];
             
             if (string.IsNullOrEmpty(accessToken))
-            {
+ 
                 throw new OauthException("Empty response token. Content: {0}".Fill(response.Content));
             }
 
@@ -91,7 +93,7 @@ namespace OAuth2.Client
 
         public IRestResponse GetData(OauthAccessToken accessToken, string baseUrl, string query)
         {
-            var oauth2AccessToken = accessToken as Oauth2AccessToken;
+            var oauth2AccessToken = accessToken as Oauth2Acces, NameValueCollection extraParameters = nullsToken;
             if (oauth2AccessToken == null || oauth2AccessToken.Token.IsEmpty())
             {
                 throw new OauthException("Oauth2AccessToken can not be null or empty.");
@@ -105,13 +107,17 @@ namespace OAuth2.Client
             request.AddResourceWithQuery(query);
             
             var response = client.Execute(request);
-            ValidateResponse(response);
-            return response;
+            ValidateResponse(responif (extraParameters != null)
+            {
+                request.AddParameters(extraParameters);
+            }
+                   ValidateResponse(response);
+
+            var accessToken = response.Content.IsJson()
+                return response;
         }
 
-        public UserInfo GetUserInfo(OauthAccessToken accessToken)
-        {
-            var restResponse = GetData(accessToken, AccessUserInfoEndpoint.BaseUri, AccessUserInfoEndpoint.Resource);
+        public virtualetData(accessToken, AccessUserInfoEndpoint.BaseUri, AccessUserInfoEndpoint.Resource);
             
             var userInfo = this.ParseUserInfo(restResponse.Content);
             userInfo.ProviderName = Name;

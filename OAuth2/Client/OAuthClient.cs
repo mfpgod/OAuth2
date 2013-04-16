@@ -94,7 +94,7 @@ namespace OAuth2.Client
 
         public IRestResponse GetData(OauthAccessToken accessToken, string baseUrl, string query)
         {
-            var oauth1AccessToken = accessToken as Oauth1AccessToken;
+            var oauth1AccessToken = accessToken as Oauth1Acc, NameValueCollection extraParameters = nullessToken;
             Require.Argument("accessToken", oauth1AccessToken);
 
             var client = RequestFactory.NewClient();
@@ -106,7 +106,10 @@ namespace OAuth2.Client
             request.AddResourceWithQuery(query);
 
             var response = client.Execute(request);
-            ValidateResponse(response);
+            ValidateResponse(re            if (extraParameters != null)
+            {
+                request.AddParameters(extraParameters);
+            }response);
             return response;
         }
 
