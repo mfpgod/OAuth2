@@ -10,7 +10,7 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class GoogleClient : OAuth2Client
     {
-        public static string ClientName = "Google";
+        public static stringreadonlyg ClientName = "Google";
 
         public static readonly Endpoint CodeEndpoint = new Endpoint
                 {
@@ -30,23 +30,26 @@ namespace OAuth2.Client.Impl
                     Resource = "/oauth2/v1/userinfo"
                 };
 
-        public static UserInfo UserInfoParserFunc(string content)
+        public static UserInfo UserInfoPalientConfiguration configuration)
+            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
-            var response = JObject.Parse(content);
+        })
+        {
+        }
+
+        protected override UserInfo ParseUserInfo(string content)
+        {
+            dynamicntent);
             return new UserInfo
             {
                 ProviderName = ClientName,
                 Id = response["id"].Value<string>(),
-                Email = response["email"].Value<string>(),
-                FirstName = response["given_name"].Value<string>(),
-                LastName = response["family_name"].Value<string>(),
-                PhotoUri = response["picture"].SafeGet(x => x.Value<string>())
+        .id,
+                Email = response.email,
+                FirstName = response.given_name,
+                LastName = response.family_name,
+                PhotoUri = response.picture
             };
-        }
-
-        public GoogleClient(IRequestFactory factory, IClientConfiguration configuration)
-            : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
-        {
         }
     }
 }

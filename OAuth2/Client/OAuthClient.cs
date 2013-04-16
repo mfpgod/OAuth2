@@ -225,6 +225,13 @@ namespace OAuth2.Client
             throw new NotImplementedException();
         }
 
-        #endregion
-    }
-}
+   ameters(parameters);
+
+            return parameters;
+        }
+
+        /// <summary>
+        /// Composes login link URI.
+        /// </summary>
+        /// <            
+            return parameters

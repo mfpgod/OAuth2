@@ -6,7 +6,7 @@ using OAuth2.Configuration;
 using OAuth2.Infrastructure;
 using OAuth2.Models;
 
-namespace OAuth2.Client.Impl
+namespacusing RestSharpespace OAuth2.Client.Impl
 {
     public class DropboxClient : OAuthClient
     {
@@ -49,6 +49,18 @@ namespace OAuth2.Client.Impl
         }
 
         protected override UserInfo ParseUserInfo(string content)
+        {
+ void ValidateResponse(IRestResponse response)
+        {
+            base.ValidateResponse(response);
+            if (response.Content.IsJson())
+            {
+                dynamic data = JObject.Parse(response.Content);
+                if (data.error != null)
+                {
+                    throw new ServiceDataException(data.error.message.ToString(), data.error.type.ToString(), data.error.code.ToString());
+                }
+            } ParseUserInfo(string content)
         {
             dynamic response = JObject.Parse(content);
 
