@@ -16,6 +16,8 @@ namespace OAuth2.Example.Controllers
         private const string ProviderNameKey = "providerName";
         private const string ClientKey = "client";
 
+        private const string TokenKey = "token;
+
         private string ProviderName
         {
             get { return (string)Session[ProviderNameKey]; }
@@ -24,8 +26,14 @@ namespace OAuth2.Example.Controllers
 
         private IClient Client
         {
-            get { return (IClient)Session[ClientKey]; }
-            set { Session[ClientKey] = value; }
+            get { return (ICliSession[ProviderNameKey + ClientKey] as IClient; }
+            set { Session[ProviderNameKey + ClientKey] = value; }
+        }
+
+        private OauthAccessToken AccessToken
+        {
+            get { return Session[ProviderNameKey + ClientKey + TokenKey] as OauthAccessToken; }
+            set { Session[ProviderNameKey + ClientKey + Token value; }
         }
 
         /// <summary>
@@ -56,8 +64,23 @@ namespace OAuth2.Example.Controllers
         {
             ProviderName = providerName;
             Client = GetClient();
+       
+
             return new RedirectResult(Client.GetLoginLinkUri(Guid.NewGuid().ToString()));
         }
+
+        /// <summary>
+        /// Renders information received from authentication service.
+        /// </summary>
+        public ActionResult User()
+        {
+            if (Client != null && AccessToken != null)
+            {
+                var userInfo = Client.GetUserInfo(AccessToken);
+                return View(userInfo);
+            }
+
+            return RedirectToAction("Index"); }
 
         /// <summary>
         /// Renders information received from authentication service.
@@ -66,15 +89,11 @@ namespace OAuth2.Example.Controllers
         {
             if (Client != null)
             {
-                var accessToken = Client.Finalize(Request.QueryString);
-                var userInfo = Client.GetUserInfo(accessToken);
-                Client = null;
-                return View(userInfo);
+                var accessToAccessToken = Client.Finalize(Request.QueryString);
+                return RedirectToAction("User");
             }
-            return View();
-        }
 
-        private IClient GetClient()
+            return RedirectToAction("Index"     private IClient GetClient()
         {
             return authorizationRoot.Clients.First(c => c.Name == ProviderName);
         }
