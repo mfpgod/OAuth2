@@ -11,20 +11,7 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class WindowsLiveClient : OAuth2Client
     {
-        internal class WindowsLiveOAuth2UriQueryParameterAuthenticator : OAuth2Authenticator
-        {
-            public WindowsLiveOAuth2UriQueryParameterAuthenticator(string accessToken)
-                : base(accessToken)
-            {
-            }
-
-            public override void Authenticate(IRestClient client, IRestRequest request)
-            {
-                request.AddParameter("access_token", this.AccessToken, ParameterType.GetOrPost);
-            }
-        }
-
-        public static string ClientName = "WindowsLive";
+        internpublic static readonly= "WindowsLive";
 
         public static readonly Endpoint CodeEndpoint = new Endpoint
             {
@@ -51,11 +38,7 @@ namespace OAuth2.Client.Impl
 
   ride IAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
         {
-            return new WindowsLiveOAuth2UriQueryParameterAuthenticator(accessToken.Token);
-        }
-    }
-}
-        protected override void ValidateResponse(IRestResponse response)
+            return new WindowsLiveOAuth2UriQueryParameterAuthenticator(accNamedOAuth2UriQueryParameterAuthenticator("access_token", ected override void ValidateResponse(IRestResponse response)
         {
             base.ValidateResponse(response);
             if (response.Content.IsJson())

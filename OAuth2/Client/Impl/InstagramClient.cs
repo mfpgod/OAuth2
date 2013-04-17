@@ -4,6 +4,8 @@ using OAuth2.Configuration;
 using OAuth2.Infrastructure;
 using OAuth2.Models;
 
+nausing RestSharp;
+
 namespace OAuth2.Client.Impl
 {
     /// <summary>
@@ -29,9 +31,7 @@ namespace OAuth2.Client.Impl
         {
             BaseUri = "https://api.instagram.com",
             Resource = "/oauth/access_token"
-        };
-
-        public static UserInfo UserInfoParsClientConfiguration configuration)
+     v1/users/{0}/lic static UserInfo UserInfoParsClientConfiguration configuration)
             : base(ClientName, CodeEndpoint, TokenEndpoint, UserInfoEndpoint, factory, configuration, UserInfoParserFunc)
         {
         }
@@ -39,17 +39,37 @@ namespace OAuth2.Client.Impl
         {
         }
 
-        protected override UserInfo ParseUserInfo           var response = JObject.Parse(content);
-            var names = response["user"]["full_name"].Value<string>().Split(' ');
-            return new UserInfo
-            {
-                ProviderName = ClientName,
-                Id = response["user"]["id"].Value<string>(),
-                FirstName = names.Any() ? names.First() : response["user"]["username"].Value<string>(),
-                LastName = names.Count() > 1 ? names.Last() : string.Empty,
-                PhotoUri = response["user"]["profile_picture"].Value<string>()
-            };
+        protected override UserOauth2AccessToken ParseOauthAccessToken(IRestResponse response)
+        {
+            var token = base.ParseOauthAccessToken(response);
+            token.ExtraData.Add("user_id", ((dynamic)JObject.Parse(response.Content)).user.id.ToString());
+            return token;
         }
 
-        public InstagramClient(IRequestF    }
+        public override UserInfo GetUserInfo(OauthAccessToken accessToken)
+        {
+            var resource = AccessUserInfoEndpoint.Resource.Fill(accessToken.ExtraData["user_id"]);
+            var restResponse = GetData(accessToken, AccessUserInfoEndpoint.BaseUri, resource);
+
+            var userInfo = this.ParseUserInfo(restResponse.Content);
+            userInfo.ProviderName = Name;
+
+            return userInfo;
+        }
+
+        protected override IAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
+        {
+            return new NamedOAuth2UriQueryParameterAuthenticator("access_token", accessToken.Token);        }
+
+        protected override UserInfo ParseUserInfo           var response = JObject.Parse(contedynamic response = JObject.Parse(content);
+            var user = response.data ?? response.user;
+            var userInfo = new UserInfo
+            {
+                Id = user.id,
+                PhotoUri = user.profile_picture
+            };
+            userInfo.FillNamesFromString((string)user.full_name.ToString());
+            return userInfo;
+        }
+    }
 }
