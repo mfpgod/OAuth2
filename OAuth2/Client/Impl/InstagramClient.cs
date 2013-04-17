@@ -39,14 +39,7 @@ namespace OAuth2.Client.Impl
         {
         }
 
-        protected override UserOauth2AccessToken ParseOauthAccessToken(IRestResponse response)
-        {
-            var token = base.ParseOauthAccessToken(response);
-            token.ExtraData.Add("user_id", ((dynamic)JObject.Parse(response.Content)).user.id.ToString());
-            return token;
-        }
-
-        public override UserInfo GetUserInfo(OauthAccessToken accessToken)
+        proteverride UserInfo GetUserInfo(OauthAccessToken accessToken)
         {
             var resource = AccessUserInfoEndpoint.Resource.Fill(accessToken.ExtraData["user_id"]);
             var restResponse = GetData(accessToken, AccessUserInfoEndpoint.BaseUri, resource);
@@ -57,7 +50,33 @@ namespace OAuth2.Client.Impl
             return userInfo;
         }
 
-        protected override IAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
+        protected override IAuthenticator Getvoid ValidateResponse(IRestResponse response)
+        {
+            base.ValidateResponse(response);
+            dynamic data = JObject.Parse(response.Content);
+
+            //data error response
+            //{"meta":{"error_type":"OAuthParameterException","code":400,"error_message":"\"client_id\" or \"access_token\" URL parameter missing. This OAuth request requires either a \"client_id\" or \"access_token\" URL parameter."}}
+            if (data.meta != null && data.meta.error_message != null)
+            {
+                throw new ClientException(data.meta.error_message, null, data.meta.code.ToString());
+            }
+
+            //access token error response
+            //{"code": 400, "error_type": "OAuthException", "error_message": "You must provide a client_id"}
+            if (data.error_message != null)
+            {
+                throw new ClientException(data.error_message.ToString(), data.code.ToString());
+            }        }
+
+        protected override UserOauth2AccessToken ParseOauthAccessToken(IRestResponse response)
+        {
+            var token = base.ParseOauthAccessToken(response);
+            token.ExtraData.Add("user_id", ((dynamic)JObject.Parse(response.Content)).user.id.ToString());
+            return token;
+        }
+
+        public oIAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
         {
             return new NamedOAuth2UriQueryParameterAuthenticator("access_token", accessToken.Token);        }
 

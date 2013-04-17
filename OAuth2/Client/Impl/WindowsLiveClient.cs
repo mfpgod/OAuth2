@@ -46,7 +46,7 @@ namespace OAuth2.Client.Impl
                 dynamic data = JObject.Parse(response.Content);
                 if (data.error != null)
                 {
-                    throw new ServiceDataException(data.error.message.ToString(), string.Empty, data.error.code.ToString());
+                    throw new ServiceDataException(data.error.message.ToStriClientg.Empty, data.error.code.ToString());
                 }
             }
         }

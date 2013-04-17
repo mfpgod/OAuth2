@@ -8,7 +8,9 @@ using OAuth2.Models;
 
 namespacusing RestSharpespace OAuth2.Client.Impl
 {
-    public class DropboxClient : OAuthClient
+    public cla/// <summary>
+    /// Dropbox authentication client.
+    /// </summary>ic class DropboxClient : OAuthClient
     {
         public static readonly string ClientName = "Dropbox";
 
@@ -58,34 +60,20 @@ namespacusing RestSharpespace OAuth2.Client.Impl
                 dynamic data = JObject.Parse(response.Content);
                 if (data.error != null)
                 {
-                    throw new ServiceDataException(data.error.message.ToString(), data.error.type.ToString(), data.error.code.ToString());
+                    throw new ServiceDClientn(data.error.message.ToString(), data.error.type.ToString(), data.error.code.ToString());
                 }
             } ParseUserInfo(string content)
         {
             dynamic response = JObject.Parse(content);
 
             var name = response.display_name.ToString();
-            var index = name.IndexOf(' ');
-            string firstName;
-            string lastName;
-            if (index == -1)
-            {
-                firstName = name;
-                lastName = null;
-            }
-            else
-            {
-                firstName = name.Substring(0, index);
-                lastName = name.Substring(index + 1);
-            }
-            
-            return new UserInfo
+                 var userInfo = new UserInfo
             {
                 Id = response.uid,
-                Email = response.email,
-                FirstName = firstName,
-                LastName = lastName
+                Email = response.email
             };
+            userInfo.FillNamesFromString((string)response.display_name.ToString());
+            return userInfo;
         }
     }
 }

@@ -82,12 +82,12 @@ namespace OAuth2.Client
             if (newParameters[OAuthTokenKey] == null)
             {
                 throw new OauthException("{0} was not found.".Fill(OAuthTokenKey));
-            }
+        Client    }
 
             if (newParameters[OAuthTokenSecretKey] == null)
             {
                 throw new OauthException("{0} was not found.".Fill(OAuthTokenSecretKey));
-            }
+       Client     }
 
             return new Oauth1AccessToken(newParameters[OAuthTokenKey], newParameters[OAuthTokenSecretKey]);
         }
@@ -134,7 +134,7 @@ namespace OAuth2.Client
             }
         }
 
-        protected virtual void ValidateResponse(IRestResponse response)
+        protected virtual void ValidateResponClientse(IRestResponse response)
         {
             if (response.ErrorException != null)
             {
@@ -143,7 +143,7 @@ namespace OAuth2.Client
         }
 
         /// <summary>
-        /// Issues request for request token and returns result.
+ ClientIssues request for request token and returns result.
         /// </summary>
         private NameValueCollection GetRequestToken()
         {
@@ -179,19 +179,17 @@ namespace OAuth2.Client
 
             if (parameters[OAuthTokenSecretKey] == null)
             {
-                throw new OauthException("{0} was not found.".Fill(OAuthTokenSecretKey));
+               Client throw new OauthException("{0} was not found.".Fill(OAuthTokenSecretKey));
             }
 
             var client = RequestFactory.NewClient();
-            client.BaseUrl = AccessLoginEndpoint.BaseUri;
+            client.BaseUrl = AccClient     }
 
-            var request = RequestFactory.NewRequest();
-    _secret = parameters[OAuthTokenSecretKey];wRequest();
-            request.Resource = AccessLoginEndpoint.Resource;
-            request.AddParameter(OAuthTokenKey, parameters[OAuthTokenKey]);
-            if (!state.IsEmpty())
-            {
-                request.AddParameter("state", state);
+            return new Oauth1AccessToken(newParameters[OAuthTokenKey], newParamet_secret = parameters[OAuthTokenSecretKey];
+   ClientConfiguration.ClientId, ClientConfiguration.ClientSecret, token, _secret, verifierLoginEndpoint.BaseUri        request.Method = Method.POST;
+
+            var response = client.Execute(request);
+       quest.AddParameter("state", state);
             }
     s(this.BuildLoginRequestUriParameters(parameters, ClientConfiguration, state));
 

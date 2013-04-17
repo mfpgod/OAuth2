@@ -15,19 +15,7 @@ namespace OAuth2.Client.Impl
     /// </summary>
     public class LinkedInOauth2Client : OAuth2Client
     {
-        public static internal class LinkedInOAuth2UriQueryParameterAuthenticator : OAuth2Authenticator
-        {
-            public LinkedInOAuth2UriQueryParameterAuthenticator(string accessToken)
-                : base(accessToken)
-            {
-            }
-
-            public override void Authenticate(IRestClient client, IRestRequest request)
-            {
-                request.AddParameter("oauth2_access_token", this.AccessToken, ParameterType.GetOrPost);
-            }
-        }
-ic static readonly string ClientName = "LinkedInOauth2";
+        public static ing ClientName = "LinkedInOauth2";
 
         public static readonly Endpoint CodeEndpoint = new Endpoint
         {
@@ -57,17 +45,21 @@ ic static readonly string ClientName = "LinkedInOauth2";
             base.ValidateResponse(response);
             if (response.Content.IsJson())
             {
-                dynamic data = JObject.Parse(response.Content);
-                if (data.errorCode != null)
-                {
-                    throw new ServiceDataException(data.message.ToString(), data.status.ToString(), data.errorCode.ToString());
-                }
+         dynamic data = JObject.Parse(response.Content);
+            
+            //data error response
+            //{"errorCode": 0,"message": "Unknown field {_gdfgdfgfirst-name} in resource {Person}","requestId": "W42QCQM6KP","status": 400,"timestamp": 1366198167795}
+            if (data.errorCode != null)
+            {
+                throw new ClientException(data.message.ToString(), data.status.ToString(), data.errorCode.ToString());
             }
-        }
-
-        protected override dynamic BuildAccessTokenExchangeObject(NameValueCollIAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
+            //access token error response
+            //{"error":"invalid_request","error_description":"missing required parameters, includes an invalid parameter value, parameter more then once. : client_id"}
+            if (data.error != null)
+            {
+                throw new ClientException(data.error.ToString(), null, data.error_description.ToString()); BuildAccessTokenExchangeObject(NameValueCollIAuthenticator GetRequestAuthenticator(Oauth2AccessToken accessToken)
         {
-            return new LinkedInOAuth2UriQueryParameterAuthenticator(accessToken.Token);ildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
+            return new LinkedInOAuth2NamedOAuth2UriQueryParameterAuthenticator("oauth2_access_token", ken);ildAccessTokenExchangeObject(NameValueCollection parameters, IClientConfiguration configuration)
         {
             return new
             {
@@ -86,7 +78,7 @@ ic static readonly string ClientName = "LinkedInOauth2";
 
             var user = new UserInfo
             {
-                ProviderName = ClientName,
+                ProviderName = ientName,
                 Id = response.id.ToString(),
                 FirstName = response.firstName,
                 LastName = response.lastName,
@@ -94,6 +86,9 @@ ic static readonly string ClientName = "LinkedInOauth2";
             };
 
             return user;
+        }
+    }
+}            return user;
         }
     }
 }

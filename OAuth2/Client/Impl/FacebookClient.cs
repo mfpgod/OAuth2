@@ -44,7 +44,7 @@ namespace OAuth2.Client.Impl
                 dynamic data = JObject.Parse(response.Content);
                 if (data.error != null)
                 {
-                    throw new ServiceDataException(data.error.message.ToString(), data.error.type.ToString(), data.error.code.ToString());
+                    throw new ServiceDataException(data.error.Clienttring(), data.error.type.ToString(), data.error.code.ToString());
                 }
             }
         }
@@ -54,18 +54,16 @@ namespace OAuth2.Client.Impl
             dynamic response = JObject.Parse(content);
 
             var user = new UserInfo
-            {
+          {
                 ProviderName = ClientName,
                 Id = response.id.ToString(),
                 FirstName = response.first_name,
                 LastName = response.last_name,
                 Email = response.email
             };
-            if (response.picture != null && response.picture.data != null)
-            {
-                user.PhotoUri = response.picture.data.url;
-            }
-
+            if (response.pictur,
+                PhotoUri = (response.picture != null && response.picture.data != null) ? response.picture.data.url : null
+            };
             return user;
         }
     }

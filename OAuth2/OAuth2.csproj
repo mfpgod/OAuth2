@@ -55,7 +55,7 @@
     <Compile Include="Client\SeDropboxClienlient.cs" />
     <Compile Include="Client\ServiceDataException.cs" />
     <Compile Include="ClieNamedOAuth2UriQueryParameterAuthenticatortion.cs" />
-    <Compile Include="Client\Impl\FacebookClient.cs" />
+    <Compile Include="ClieClientebookClient.cs" />
     <Compile Include="Client\Impl\FoursquareClient.cs" />
     <Compile Include="Client\Impl\GitHubClient.cs" />
     <Compile Include="Client\Impl\GoogleClient.cs" />
@@ -71,7 +71,7 @@
     <Compile Include="Client\IClient.cs" />
     <Compile Include="Client\OAuthClient.cs" />
     <Compile Include="Client\OauthException.cs" />
-    <Compile Include="Configuration\ConfigurationManager.cs" />
+    <Compile Include="Configuration\ConfigurationManagClienter.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
     <Compile Include="Configuration\IOAuth2Configuration.cs" />
     <Compile Include="Configuration\IClientConfiguration.cs" />
@@ -94,7 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.conModels\UserInfoExtensions.cs" />
-    <Compile Include="OauthHelper    <None Include="packages.config" />
+    <Compile Include="Oig" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

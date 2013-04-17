@@ -7,7 +7,8 @@ namespace OAuth2.Client.Impl
 {
     /// <summary>
     /// Foursquare authentication client.
-    /// </summary>
+  
+    /// https://developer.foursquare.com/overview/auth.html  /// </summary>
     public class FoursquareClient : OAuth2Client
     {
         public static strinreadonlyng ClientName = "Foursquare";
@@ -38,23 +39,17 @@ namespace OAuth2.Client.Impl
 
         protected override UserInfo ParseUserInfo(string content)
         {
-            var response = JObject.Parse(content);
+            dynamic response = JObject.Parse(content);
+            var user = response.response.user;
             return new UserInfo
             {
                 ProviderName = ClientName,
-                Id = response["response"]["user"]["id"].Value<string>(),
-                FirstName = response["response"]["user"]["firstName"].Value<string>(), response["response"]["user"]["lastName"].Value<string>(),
-                Email = re
-                Email = response["response"]["user"]["contact"]["email"].Value<string>(),
-                PhotoUri = response["response"]["user"]["photo"].Value<string>()
-            };>
-        /// Called just before issuing request to third-party service when everything is ready.
-        /// Allows to add extra parameters to request or do any other needed preparations.
-        /// </summary>
-//        protected override void BeforeGetUserInfo(IRestRequest request)
-//        {
-//            // Source document 
-//            // https://developer.foursquare.com/overview/auth.html
-//        }
+                Id = user.id,
+                FirstName = user.firstName,
+                LastName = user.lastName,
+                Email = (user.contact != null) ? user.contact.email : null,
+                PhotoUri = user.photo
+            };
+        }
     }
 }
