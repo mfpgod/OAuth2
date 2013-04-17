@@ -93,7 +93,7 @@ namespace OAuth2.Example.Controllers
                 return RedirectToAction("User");
             }
 
-            return RedirectToAction("Index"     private IClient GetClient()
+            return RedirectToAction("Login", new {providerName = ProviderName}     private IClient GetClient()
         {
             return authorizationRoot.Clients.First(c => c.Name == ProviderName);
         }
